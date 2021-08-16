@@ -16,6 +16,12 @@ extension Status {
     // MARK: - Redirection (3xx)
     
     // MARK: - Client Errors (4xx)
+    static let badRequest = Status(code: 400, description: "Bad Request")
+    static let unauthorized = Status(code: 401, description: "Unauthorized")
+    static let forbidden = Status(code: 403, description: "Forbidden")
+    static let notFound = Status(code: 404, description: "Not Found")
+    static let methodNotAllowed = Status(code: 405, description: "Method Not Allowed")
+    // ...
     static let teapot = Status(code: 418, description: "I'm a teapot")
     
     // MARK: - Server Errors (5xx)
