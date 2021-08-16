@@ -1,5 +1,5 @@
     import XCTest
-    @testable import Kloy_Core
+    @testable import Core
     
     final class HttpTests: XCTestCase {
         func testExample() {
