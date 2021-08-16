@@ -16,7 +16,7 @@ extension Status {
     // MARK: - Redirection (3xx)
     
     // MARK: - Client Errors (4xx)
-    static let iAmATeapot = Status(code: 418, description: "I'm a teapot")
+    static let teapot = Status(code: 418, description: "I'm a teapot")
     
     // MARK: - Server Errors (5xx)
 }

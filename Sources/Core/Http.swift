@@ -9,6 +9,10 @@ enum Method {
     case Get, Post, Put, Delete, Options, Trace, Patch, Purge, Head
 }
 
+enum Version {
+    case Http1dot1, Http2
+}
+
 struct Status {
     let code: Int
     let description: String
@@ -24,14 +28,14 @@ struct Request {
     let method: Method
     let headers: [Header]
     let uri: String
-    let version: String
+    let version: Version
     let body: Body
 }
 
 struct Response {
     let status: Status
     let headers: [Header]
-    let version: String
+    let version: Version
     let body: Body
 }
 
