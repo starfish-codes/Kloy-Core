@@ -6,13 +6,44 @@
 ///
 ///
 
-let notFound = Response(status: .notFound, headers: [], version: .Http1dot1, body: .empty)
+/// "/test".bind(.Get.to(handler))
+
+precedencegroup Routing {
+    associativity: left
+}
+
+struct PathMethod {}
+
+infix operator <+>: Routing
+
+func <+> (path: String, method: Method) -> PathMethod {
+    PathMethod()
+}
+
+
+struct RoutedService {}
+
+infix operator ~>: Routing
+
+func ~> (pathMethod: PathMethod, service: Service) -> RoutedService {
+    return RoutedService()
+}
+
+func testService(req: Request) -> Response {
+    notFound(from: req)
+}
+let testRouter = "/test" <+> .Get ~> testService
+
+
+func notFound(from req: Request) -> Response {
+    Response(status: .notFound, headers: [], version: req.version, body: .empty)
+}
 
 func route(_ segment: String, _ services:  Service...) -> Service {
   { request in
     let components = request.uri.split(separator: "/")
     guard components.count > 0 else {
-        return notFound
+        return notFound(from: request)
     }
     
     if components[0] == segment {
@@ -20,7 +51,7 @@ func route(_ segment: String, _ services:  Service...) -> Service {
         // pass on the tail segments of the path
         return services[0](request)
     } else {
-        return notFound
+        return notFound(from: request)
     }
   }
 }
@@ -30,7 +61,7 @@ func route(_ method: Method, _ service: @escaping Service) -> Service {
     if request.method == method {
         return service(request)
     } else {
-        return notFound
+        return notFound(from: request)
     }
   }
 }
