@@ -33,6 +33,7 @@ func testService(req: Request) -> Response {
     notFound(from: req)
 }
 let testRouter = "/test" <+> .Get ~> testService
+let anotherTestRouter = "/test" <+> .Get ~> testService
 
 
 func notFound(from req: Request) -> Response {
@@ -64,4 +65,17 @@ func route(_ method: Method, _ service: @escaping Service) -> Service {
         return notFound(from: request)
     }
   }
+}
+
+
+routers(
+    [
+        testRouter,
+        anotherTestRouter
+    ]
+)
+
+//I am not sure about the return type could also be void and this func a method in Server 
+func routers(_ routers:RoutedService...) -> RoutedService{
+    //Somehow combine and store them 
 }
