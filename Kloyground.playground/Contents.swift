@@ -86,7 +86,7 @@ precedencegroup ForwarApplication {
 }
 
 precedencegroup BackwarApplication {
-    associativity: right,
+    associativity: right
     higherThan: ForwardApplication
 }
 
@@ -116,7 +116,7 @@ infix operator >>>: ForwardComposition
 
 //The andThen from the paper
 func >>> <A,B,C>(f: @escaping (A) -> B, g: @escaping (B) -> c) -> ((A) -> C){
-    return { in a
+    return { a in
         g(f(a))
     }
 }
@@ -124,7 +124,7 @@ func >>> <A,B,C>(f: @escaping (A) -> B, g: @escaping (B) -> c) -> ((A) -> C){
 infix operator <<<: BackwardComposition
 
 func >>> <A,B,C>(f: @escaping (A) -> B, g: @escaping (B) -> c) -> ((A) -> C){
-    return { in a
+    return { a in
         f(g(a))
     }
 }
