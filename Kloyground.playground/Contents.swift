@@ -15,7 +15,7 @@ struct PathMethod {}
 
 infix operator <+>: Routing
 
-func <+> (path: String, method: Core.Method) -> PathMethod {
+func <+> (path: String, method: HTTPMethod) -> PathMethod {
     PathMethod()
 }
 
