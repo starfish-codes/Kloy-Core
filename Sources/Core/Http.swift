@@ -5,12 +5,12 @@ public struct Header {
     let value: String
 }
 
-public enum Method {
+public enum HTTPMethod {
     case Get, Post, Put, Delete, Options, Trace, Patch, Purge, Head
 }
 
-public enum Version {
-    case Http1dot1, Http2
+public enum HTTPVersion {
+    case OneOne, Two
 }
 
 public struct Status {
@@ -36,16 +36,16 @@ public struct Body {
 }
 
 public struct Request {
-    public let method: Method
+    public let method: HTTPMethod
     public let headers: [Header]
     public let uri: String
-    public let version: Version
+    public let version: HTTPVersion
     public let body: Body
     
-    public init(method: Method,
+    public init(method: HTTPMethod,
                 headers: [Header] = [],
                 uri: String,
-                version: Version = .Http1dot1,
+                version: HTTPVersion = .OneOne,
                 body: Body) {
         self.method = method
         self.headers = headers
@@ -58,10 +58,10 @@ public struct Request {
 public struct Response {
     public let status: Status
     public let headers: [Header]
-    public let version: Version
+    public let version: HTTPVersion
     public let body: Body
     
-    public init(status: Status, headers: [Header], version: Version, body: Body) {
+    public init(status: Status, headers: [Header], version: HTTPVersion, body: Body) {
         self.status = status
         self.headers = headers
         self.version = version

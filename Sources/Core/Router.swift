@@ -16,7 +16,7 @@ struct PathMethod {}
 
 infix operator <+>: Routing
 
-func <+> (path: String, method: Method) -> PathMethod {
+func <+> (path: String, method: HTTPMethod) -> PathMethod {
     PathMethod()
 }
 
@@ -57,7 +57,7 @@ func route(_ segment: String, _ services:  Service...) -> Service {
   }
 }
 
-func route(_ method: Method, _ service: @escaping Service) -> Service {
+func route(_ method: HTTPMethod, _ service: @escaping Service) -> Service {
   { request in
     if request.method == method {
         return service(request)
@@ -65,17 +65,4 @@ func route(_ method: Method, _ service: @escaping Service) -> Service {
         return notFound(from: request)
     }
   }
-}
-
-
-routers(
-    [
-        testRouter,
-        anotherTestRouter
-    ]
-)
-
-//I am not sure about the return type could also be void and this func a method in Server 
-func routers(_ routers:RoutedService...) -> RoutedService{
-    //Somehow combine and store them 
 }
