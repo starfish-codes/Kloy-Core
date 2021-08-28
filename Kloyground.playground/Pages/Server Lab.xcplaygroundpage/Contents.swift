@@ -1,8 +1,11 @@
-//: [Previous](@previous)
+let uri = "/api/v1/test/10"
+print(uri.split(separator: "/"))
 
-import Foundation
+let route = [3, 2, 4, 2]
 
-var greeting = "Hello, playground"
+let combi = zip(uri.split(separator: "/"), route)
 
-//: [Next](@next)
-
+let result = combi
+    .map { $0.count == $1 }
+    .reduce(true, { $0 && $1 })
+print(result)
