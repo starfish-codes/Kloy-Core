@@ -25,4 +25,5 @@ extension Status {
     public static let teapot = Status(code: 418, description: "I'm a teapot")
     
     // MARK: - Server Errors (5xx)
+    public static let internalServerError = Status(code: 500, description: "Internal Server Error")
 }

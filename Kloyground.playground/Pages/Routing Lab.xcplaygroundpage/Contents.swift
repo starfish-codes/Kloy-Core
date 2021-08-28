@@ -28,9 +28,39 @@ let router = routed(allCatsRouter,
                     catRouter,
                     adoptCatRouter)
 
-let catRequest = Request(method: .Get,
-                         uri: "/api/v1/cats",
-                         body: .empty)
+inspect(
+    Server(from: router).process(request: Request(method: .Get,
+                                                  uri: "/api/v1/cats",
+                                                  body: .empty))
+)
 
-let response = Server(from: router).process(request: catRequest)
-inspect(response)
+// Left to todo:
+
+// 1. matching parameters
+inspect(
+    Server(from: router).process(request: Request(method: .Get,
+                                                  uri: "/api/v1/cats/58b8d258-5e78-4108-9eee-c3cb6844331f ",
+                                                  body: .empty))
+)
+
+// 2. nested routes
+func routed(_ segment: Segment, _ services: Service...) -> Service {
+    { request in
+        Response(status: .internalServerError, headers: [], version: request.version, body: .init(from: "Not implemented")!)
+    }
+}
+
+let router2 = routed("api/v1",
+                     routed("cats",
+                            routed(route(.Get, "")             ~> simpleService(body: "All 🐈"),
+                                   route(.Get, Parameter.UUID) ~> simpleService(body: "A 🐈"),
+                                   route(.Post, "")            ~> simpleService(body: "Adopt a 🐈")
+                            )
+                     )
+)
+
+inspect(
+    Server(from: router2).process(request: Request(method: .Get,
+                                                   uri: "/api/v1/cats",
+                                                   body: .empty))
+)

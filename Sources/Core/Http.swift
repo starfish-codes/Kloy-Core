@@ -20,7 +20,11 @@ public struct Status {
 
 public extension String {
     init(from: Body) {
-        self.init(String(data: from.payload, encoding: .utf8) ?? "[empty body]")
+        if let payload = String(data: from.payload, encoding: .utf8) {
+            self.init(payload.count > 0 ? payload : "[empty body]")
+        } else {
+            self.init("[Encoding error]")
+        }
     }
 }
 
