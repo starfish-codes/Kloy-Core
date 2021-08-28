@@ -71,7 +71,7 @@ extension String: Segment {
 }
 
 public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
-    Route(path: segments, method: method)
+    Route(path: segments.flatMap { $0.path }, method: method)
 }
 
 public typealias RoutedService = (Request) -> Response?
@@ -93,7 +93,15 @@ func match(_ route: Route, with request: Request) -> Bool {
 }
 
 func match(_ path: Path, with uri: String) -> Bool {
-    return false
+    let uriParts = uri.split(separator: "/")
+    
+    guard uriParts.count == path.count else {
+        return false
+    }
+    
+    return zip(path, uriParts)
+        .map { $0.match(String($1)) }
+        .reduce(true, { $0 && $1 })
 }
 
 infix operator ~>
