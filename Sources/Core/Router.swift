@@ -1,6 +1,10 @@
+import Foundation
+
 public protocol Segment {
     var stringValue: String { get }
     var path: Path { get }
+    
+    func match(_ string: String) -> Bool
 }
 
 public typealias Path = [Segment]
@@ -10,13 +14,34 @@ public struct Route {
     let method: HTTPMethod
 }
 
-public enum Parameter: String, Segment {
-    case Int
-    case String
-    case UUID
+public struct NamedParam: Segment {
+    public enum ParamType: String {
+        case Int
+        case String
+        case UUID
+    }
     
-    public var stringValue: String { "{param, type.: \(self)}" }
+    let name: String
+    let type: ParamType
+
+    public init(_ name: String, type: ParamType) {
+        self.name = name
+        self.type = type
+    }
+    
+    public var stringValue: String { "{\(name): \(type)}" }
     public var path: Path { [self] }
+    
+    public func match(_ string: String) -> Bool {
+        switch type {
+        case .Int:
+            return Int(string) != nil
+        case .String:
+            return true
+        case .UUID:
+            return Foundation.UUID(uuidString: string) != nil
+        }
+    }
 }
 
 extension String {
@@ -34,10 +59,15 @@ extension String {
         self.init("\(method) \(path)")
     }
 }
+
 extension String: Segment {
     public var stringValue: String { self }
     
     public var path: Path { self.split(separator: "/").map { String($0) } }
+    
+    public func match(_ string: String) -> Bool {
+        self.lowercased() == string.lowercased()
+    }
 }
 
 public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
@@ -48,7 +78,7 @@ public typealias RoutedService = (Request) -> Response?
 
 func router(route: Route, service: @escaping Service) -> RoutedService {
     { request in
-        if match(route: route, request: request) {
+        if match(route, with: request) {
             return service(request)
         } else {
             return nil
@@ -57,8 +87,13 @@ func router(route: Route, service: @escaping Service) -> RoutedService {
     }
 }
 
-func match(route: Route, request: Request) -> Bool {
-    return route.method == request.method && String(from: route.path) == request.uri
+func match(_ route: Route, with request: Request) -> Bool {
+    return
+        route.method == request.method && match(route.path, with: request.uri)
+}
+
+func match(_ path: Path, with uri: String) -> Bool {
+    return false
 }
 
 infix operator ~>
