@@ -40,9 +40,6 @@ extension String: Segment {
     public var path: Path { self.split(separator: "/").map { String($0) } }
 }
 
-let path = "/"
-let pathSegments = path.split(separator: "/")
-
 public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
     Route(path: segments, method: method)
 }
@@ -65,14 +62,12 @@ func match(route: Route, request: Request) -> Bool {
 }
 
 infix operator ~>
-
 public func ~> (route: Route, service: @escaping Service) -> RoutedService {
     router(route: route, service: service)
 }
 
-let empty: RoutedService = { request in nil }
-
-func orRouter(left: @escaping RoutedService, right: @escaping RoutedService) -> RoutedService {
+infix operator <|>
+public func <|> (left: @escaping RoutedService, right: @escaping RoutedService) -> RoutedService {
     { request in
         if let lhs = left(request) {
             return lhs
@@ -83,7 +78,7 @@ func orRouter(left: @escaping RoutedService, right: @escaping RoutedService) -> 
 }
 
 public func routed(_ routes: RoutedService...) -> Service {
-    let combined = routes.reduce(empty, orRouter)
+    let combined = routes.reduce({ request in nil }, <|>)
     return { request in
         if let result = combined(request) {
             return result
