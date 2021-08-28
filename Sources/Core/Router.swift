@@ -1,68 +1,94 @@
-///   /hello <-> GET HelloService
-///
-///   route("api", route("v1", route("hello", route(.Get, helloService))))
-///
-///   route("hello", route(.Get, helloService))
-///
-///
-
-/// "/test".bind(.Get.to(handler))
-
-precedencegroup Routing {
-    associativity: left
+public protocol Segment {
+    var stringValue: String { get }
+    var path: Path { get }
 }
 
-struct PathMethod {}
+public typealias Path = [Segment]
 
-infix operator <+>: Routing
-
-func <+> (path: String, method: HTTPMethod) -> PathMethod {
-    PathMethod()
+public struct Route {
+    let path: Path
+    let method: HTTPMethod
 }
 
-
-struct RoutedService {}
-
-infix operator ~>: Routing
-
-func ~> (pathMethod: PathMethod, service: Service) -> RoutedService {
-    return RoutedService()
+public enum Parameter: String, Segment {
+    case Int
+    case String
+    case UUID
+    
+    public var stringValue: String { "{param, type.: \(self)}" }
+    public var path: Path { [self] }
 }
 
-func testService(req: Request) -> Response {
-    notFound(from: req)
-}
-let testRouter = "/test" <+> .Get ~> testService
-let anotherTestRouter = "/test" <+> .Get ~> testService
-
-
-func notFound(from req: Request) -> Response {
-    Response(status: .notFound, headers: [], version: req.version, body: .empty)
-}
-
-func route(_ segment: String, _ services:  Service...) -> Service {
-  { request in
-    let components = request.uri.split(separator: "/")
-    guard components.count > 0 else {
-        return notFound(from: request)
+extension String {
+    init(from path: Path) {
+        let fullPath = path
+            .flatMap { $0.path }
+            .map { $0.stringValue }
+            .joined(separator: "/")
+        self.init("/\(fullPath)" )
     }
     
-    if components[0] == segment {
-        // find a match in the services list
-        // pass on the tail segments of the path
-        return services[0](request)
-    } else {
-        return notFound(from: request)
+    init(from route: Route) {
+        let path = String(from: route.path)
+        let method = route.method.rawValue.uppercased()
+        self.init("\(method) \(path)")
     }
-  }
+}
+extension String: Segment {
+    public var stringValue: String { self }
+    
+    public var path: Path { self.split(separator: "/").map { String($0) } }
 }
 
-func route(_ method: HTTPMethod, _ service: @escaping Service) -> Service {
-  { request in
-    if request.method == method {
-        return service(request)
-    } else {
-        return notFound(from: request)
+let path = "/"
+let pathSegments = path.split(separator: "/")
+
+public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
+    Route(path: segments, method: method)
+}
+
+public typealias RoutedService = (Request) -> Response?
+
+func router(route: Route, service: @escaping Service) -> RoutedService {
+    { request in
+        if match(route: route, request: request) {
+            return service(request)
+        } else {
+            return nil
+            
+        }
     }
-  }
+}
+
+func match(route: Route, request: Request) -> Bool {
+    return route.method == request.method && String(from: route.path) == request.uri
+}
+
+infix operator ~>
+
+public func ~> (route: Route, service: @escaping Service) -> RoutedService {
+    router(route: route, service: service)
+}
+
+let empty: RoutedService = { request in nil }
+
+func orRouter(left: @escaping RoutedService, right: @escaping RoutedService) -> RoutedService {
+    { request in
+        if let lhs = left(request) {
+            return lhs
+        } else {
+            return right(request)
+        }
+    }
+}
+
+public func routed(_ routes: RoutedService...) -> Service {
+    let combined = routes.reduce(empty, orRouter)
+    return { request in
+        if let result = combined(request) {
+            return result
+        } else {
+            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+        }
+    }
 }
