@@ -5,7 +5,7 @@ public struct Header {
     let value: String
 }
 
-public enum HTTPMethod {
+public enum HTTPMethod: String {
     case Get, Post, Put, Delete, Options, Trace, Patch, Purge, Head
 }
 
@@ -14,12 +14,18 @@ public enum HTTPVersion {
 }
 
 public struct Status {
-    let code: Int
-    let description: String
+    public let code: Int
+    public let description: String
+}
+
+public extension String {
+    init(from: Body) {
+        self.init(String(data: from.payload, encoding: .utf8) ?? "[empty body]")
+    }
 }
 
 public struct Body {
-    let payload: Data
+    public let payload: Data
     
     public init(payload: Data) {
         self.payload = payload
