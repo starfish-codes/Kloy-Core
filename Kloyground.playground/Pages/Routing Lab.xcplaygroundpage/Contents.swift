@@ -69,3 +69,4 @@ inspect(
                                                    uri: "/api/v1/cats",
                                                    body: .empty))
 )
+

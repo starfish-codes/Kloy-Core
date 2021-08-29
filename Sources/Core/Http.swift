@@ -13,7 +13,7 @@ public enum HTTPVersion {
     case OneOne, Two
 }
 
-public struct Status {
+public struct Status: Equatable {
     public let code: Int
     public let description: String
 }
