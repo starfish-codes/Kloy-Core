@@ -29,7 +29,7 @@ enum ContentType: String, CaseIterable {
     case Yaml = "text/yaml"
 }
 
-public struct Status {
+public struct Status: Equatable {
     public let code: Int
     public let description: String
 }
