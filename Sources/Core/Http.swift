@@ -84,6 +84,10 @@ public struct Request {
     mutating func setNamedParameter(name: String, value: String) {
         namedParameters[name] = value
     }
+    
+    public func getParameter(_ name: String) -> String? {
+        namedParameters[name]
+    }
 }
 
 public struct Response {

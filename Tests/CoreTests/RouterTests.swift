@@ -64,4 +64,17 @@ final class RouterTests: XCTestCase {
         let goodRequest = simpleRequest(uri: "/api/v1/cats/114e0431-d939-485e-bf0c-ecfd566df419")
         XCTAssertNotNil(match(aCatRoute, with: goodRequest))
     }
+    
+    func testNamedParameterPassedDownStream() throws {
+        let aCatRoute  = route(.Get, "api/v1", "cats", NamedParameter("cat_id", type: .UUID))
+        let upStreamRequest = simpleRequest(uri: "/api/v1/cats/114e0431-d939-485e-bf0c-ecfd566df419")
+        
+        let after = match(aCatRoute, with: upStreamRequest)
+        XCTAssertNil(upStreamRequest.getParameter("cat_id"))
+        
+        let downStreamRequest = try XCTUnwrap(after)
+        let parameter = try XCTUnwrap(downStreamRequest.getParameter("cat_id"))
+        
+        XCTAssertEqual(parameter, "114e0431-d939-485e-bf0c-ecfd566df419")
+    }
 }
