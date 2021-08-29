@@ -79,6 +79,11 @@ public struct Request {
         self.version = version
         self.body = body
     }
+    
+    var namedParameters: [String:String] = [:]
+    mutating func setNamedParameter(name: String, value: String) {
+        namedParameters[name] = value
+    }
 }
 
 public struct Response {
