@@ -9,5 +9,7 @@ jobs:
     - uses: fwal/setup-swift@v1
     - name: Get swift version
       run: swift --version
+    - name: Build
+      run: swift build
     - name: 🏃 tests
-      run: make test
+      run: swift test
