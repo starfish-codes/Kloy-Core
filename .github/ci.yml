@@ -1,0 +1,13 @@
+name: Kloy-Core
+on: [push, pull_request]
+jobs:
+  mac:
+    name: macOS
+    runs-on: macos-11
+    steps:
+    - uses: actions/checkout@v2
+    - uses: fwal/setup-swift@v1
+    - name: Get swift version
+      run: swift --version
+    - name: 🏃 tests
+      run: make test
