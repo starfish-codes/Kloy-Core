@@ -88,6 +88,11 @@ public struct Request {
     public func getParameter(_ name: String) -> String? {
         namedParameters[name]
     }
+    
+    public func getParameter<T>(_ name: String, as type: T.Type = T.self) -> T?
+    where T: LosslessStringConvertible {
+        self.getParameter(name).flatMap(T.init)
+    }
 }
 
 public struct Response {

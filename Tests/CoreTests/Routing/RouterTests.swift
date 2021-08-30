@@ -62,16 +62,17 @@ final class RouterTests: XCTestCase {
     }
     
     func testNamedParameterPassedDownStream() throws {
+        let sampleUUID = UUID()
         let aCatRoute  = route(.Get, "api/v1", "cats", NamedParameter("cat_id", type: .UUID))
-        let upStreamRequest = simpleRequest(uri: "/api/v1/cats/114e0431-d939-485e-bf0c-ecfd566df419")
+        let upStreamRequest = simpleRequest(uri: "/api/v1/cats/\(sampleUUID.uuidString)")
         
         let after = matchRequest(aCatRoute, with: upStreamRequest)
         XCTAssertNil(upStreamRequest.getParameter("cat_id"))
         
         let downStreamRequest = try XCTUnwrap(after)
-        let parameter = try XCTUnwrap(downStreamRequest.getParameter("cat_id"))
+        let uuidParamter: UUID = try XCTUnwrap(downStreamRequest.getParameter("cat_id"))
         
-        XCTAssertEqual(parameter, "114e0431-d939-485e-bf0c-ecfd566df419")
+        XCTAssertEqual(uuidParamter, sampleUUID)
     }
     
     func testNonMatchDueToMethod() {

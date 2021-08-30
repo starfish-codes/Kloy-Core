@@ -238,3 +238,12 @@ public func <|> (left: @escaping RoutedService, right: @escaping RoutedService) 
     }
 }
 infix operator <|>
+
+// MARK: - Auxillary
+
+/// Make UUID also compatible to `LosslessStringConvertible`
+extension UUID: LosslessStringConvertible {
+    public init?(_ description: String) {
+        self.init(uuidString: description)
+    }
+}
