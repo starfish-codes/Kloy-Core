@@ -15,7 +15,7 @@ func inspect(_ response: Response) {
 
 // Route Samples
 let allCats  = route(.Get, "api/v1", "cats")
-let aCat     = route(.Get, "api", "v1", "cats", NamedParameter("cat_id", type: .UUID))
+let aCat     = route(.Get, "api", "v1", "cats", Parameter("cat_id", type: .UUID))
 let adoptCat = route(.Get, "/api/v1/cats")
 
 // Router Samples
@@ -57,7 +57,7 @@ func routed(_ segment: Segment, _ services: Service...) -> Service {
 let router2 = routed("api/v1",
                      routed("cats",
                             routed(route(.Get, "")                                   ~> simpleService(body: "All 🐈"),
-                                   route(.Get, NamedParameter("cat_id", type: .Int)) ~> simpleService(body: "A 🐈"),
+                                   route(.Get, Parameter("cat_id", type: .Int)) ~> simpleService(body: "A 🐈"),
                                    route(.Post, "")                                  ~> simpleService(body: "Adopt a 🐈")
                             )
                      )

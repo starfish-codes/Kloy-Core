@@ -73,13 +73,13 @@ extension String: Segment {
 }
 
 /// Typed implementation of a Segment that represents a named parameter in an URI.
-/// The named parameters can be used to dynamically match against parts of the URI.
+/// The parameters can be used to dynamically match against parts of the URI.
 ///
 ///     // declares a parameter segment with the name `some_id` of type Int.
 ///     let param = NamedParameter("some_id", ParameterType.Int)
 ///
 /// The segment will only match in case the type constraint is fulfilled.
-public struct NamedParameter: Segment, Equatable {
+public struct Parameter: Segment, Equatable {
     
     /// Supported types for named parameters in URI.
     /// The `ParameterType.String` will match anything.

@@ -28,21 +28,21 @@ final class RouterTests: XCTestCase {
     }
     
     func testNoMatch() {
-        let aCatsRoute  = route(.Get, "api/v1/cats", NamedParameter("cat_id", type: .Int))
+        let aCatsRoute  = route(.Get, "api/v1/cats", Parameter("cat_id", type: .Int))
         let request = simpleRequest(uri: "/api/v1/cats")
         
         XCTAssertNil(matchRequest(aCatsRoute, with: request))
     }
     
     func testMatchStringParameter() {
-        let aCatsRoute  = route(.Get, "api", NamedParameter("version", type: .String), "cats")
+        let aCatsRoute  = route(.Get, "api", Parameter("version", type: .String), "cats")
         let request = simpleRequest(uri: "/api/v1/cats")
         
         XCTAssertNotNil(matchRequest(aCatsRoute, with: request))
     }
     
     func testMatchIntParameter() {
-        let aCatsRoute  = route(.Get, "api", NamedParameter("version", type: .Int), "cats")
+        let aCatsRoute  = route(.Get, "api", Parameter("version", type: .Int), "cats")
         
         let wrongRequest = simpleRequest(uri: "/api/v1/cats")
         XCTAssertNil(matchRequest(aCatsRoute, with: wrongRequest))
@@ -52,7 +52,7 @@ final class RouterTests: XCTestCase {
     }
     
     func testMatchUUIDParameter() {
-        let aCatRoute  = route(.Get, "api/v1", "cats", NamedParameter("cat_id", type: .UUID))
+        let aCatRoute  = route(.Get, "api/v1", "cats", Parameter("cat_id", type: .UUID))
         
         let wrongRequest = simpleRequest(uri: "/api/v1/cats/test")
         XCTAssertNil(matchRequest(aCatRoute, with: wrongRequest))
@@ -63,7 +63,7 @@ final class RouterTests: XCTestCase {
     
     func testNamedParameterPassedDownStream() throws {
         let sampleUUID = UUID()
-        let aCatRoute  = route(.Get, "api/v1", "cats", NamedParameter("cat_id", type: .UUID))
+        let aCatRoute  = route(.Get, "api/v1", "cats", Parameter("cat_id", type: .UUID))
         let upStreamRequest = simpleRequest(uri: "/api/v1/cats/\(sampleUUID.uuidString)")
         
         let after = matchRequest(aCatRoute, with: upStreamRequest)

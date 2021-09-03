@@ -26,20 +26,20 @@ final class SegmentMatchTests: XCTestCase {
 
 final class ParameterizedSegmentTests: XCTestCase {
     func testStringValue() {
-        let segment = NamedParameter("param", type: .UUID)
+        let segment = Parameter("param", type: .UUID)
         
         XCTAssertEqual(segment.stringValue, "{param: UUID}")
     }
     
     func testPath() {
-        let namedParameter = NamedParameter("param", type: .UUID)
+        let namedParameter = Parameter("param", type: .UUID)
         
         XCTAssertEqual(namedParameter.path.count, 1)
-        XCTAssertEqual(namedParameter.path[0] as? NamedParameter, namedParameter)
+        XCTAssertEqual(namedParameter.path[0] as? Parameter, namedParameter)
     }
     
     func testIntMatch() throws {
-        let namedParameter = NamedParameter("param", type: .Int)
+        let namedParameter = Parameter("param", type: .Int)
         
         let match10 = try XCTUnwrap(namedParameter.match("10"))
         XCTAssertEqual(match10.parameterValue?.value, "10")
@@ -55,14 +55,14 @@ final class ParameterizedSegmentTests: XCTestCase {
     }
     
     func testStringMatch() throws {
-        let namedParameter = NamedParameter("param", type: .String)
+        let namedParameter = Parameter("param", type: .String)
         
         let matchHello = try XCTUnwrap(namedParameter.match("Hello"))
         XCTAssertEqual(matchHello.parameterValue?.value, "Hello")
     }
     
     func testUUIDMatch() throws {
-        let namedParameter = NamedParameter("param", type: .UUID)
+        let namedParameter = Parameter("param", type: .UUID)
         let validUUID = UUID().uuidString
         
         let matchUUID = try XCTUnwrap(namedParameter.match(validUUID))
