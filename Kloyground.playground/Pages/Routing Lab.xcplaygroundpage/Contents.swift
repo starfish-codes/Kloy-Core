@@ -48,12 +48,6 @@ print()
 // Left to todo:
 
 // 2. nested routes
-func routed(_ segment: Segment, _ services: Service...) -> Service {
-    { request in
-        Response(status: .internalServerError, headers: [], version: request.version, body: .init(from: "Not implemented")!)
-    }
-}
-
 let router2 = routed("api/v1",
                      routed("cats",
                             routed(route(.Get, "")                                   ~> simpleService(body: "All 🐈"),

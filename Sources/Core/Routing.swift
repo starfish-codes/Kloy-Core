@@ -216,6 +216,30 @@ public func routed(_ routes: RoutedService...) -> Service {
     }
 }
 
+public func routed(_ segment: Segment, _ services: Service...) -> Service {
+    { request in
+        var newRequest = request
+        if newRequest.shiftRouteContext(by: segment) != nil {
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
+            return combined(newRequest)
+        } else {
+            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+        }
+    }
+}
+
+public func <|>(left: @escaping Service, right: @escaping Service) -> Service {
+    { request in
+        let leftResponse = left(request)
+        if leftResponse.status != .notFound {
+            return leftResponse
+        } else {
+            return right(request)
+        }
+    }
+}
+
+
 /// Combines two `RoutedServices` with a short circuited or logic.
 ///
 ///     let indexRouter = indexRoute ~> indexService

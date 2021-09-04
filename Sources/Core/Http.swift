@@ -65,6 +65,7 @@ public struct Request {
     public let method: HTTPMethod
     public let headers: [Header]
     public let uri: String
+    public let path: Path
     public let version: HTTPVersion
     public let body: Body
     
@@ -76,6 +77,7 @@ public struct Request {
         self.method = method
         self.headers = headers
         self.uri = uri
+        self.path = uri.split(separator: "/").map(String.init)
         self.version = version
         self.body = body
     }
@@ -93,6 +95,31 @@ public struct Request {
     where T: LosslessStringConvertible {
         self.getParameter(name).flatMap(T.init)
     }
+    
+    var routeContextIndex: Int? = nil
+    public var routeContextPath: Path {
+        get {
+            if let idx = routeContextIndex {
+                return Array(path[idx...])
+            } else {
+                return path
+            }
+        }
+    }
+    
+    public mutating func shiftRouteContext(by segment: Segment) -> Path? {
+        let segmentPath = segment.path
+        guard segmentPath.count <= routeContextPath.count else { return nil }
+        
+        let rootPath = routeContextPath[..<segmentPath.count]
+        if rootPath.elementsEqual(segmentPath, by: { $0.stringValue == $1.stringValue }) {
+            routeContextIndex = rootPath.endIndex
+            return routeContextPath
+        } else {
+            return nil
+        }
+    }
+    
 }
 
 public struct Response {

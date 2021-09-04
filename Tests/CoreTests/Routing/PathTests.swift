@@ -92,9 +92,7 @@ final class StringSegmentTests: XCTestCase {
         let structuredPathString = "/api/v1/test"
         
         XCTAssertEqual(structuredPathString.path.count, 3)
-        XCTAssertEqual(structuredPathString.path[0] as? String, "api")
-        XCTAssertEqual(structuredPathString.path[1] as? String, "v1")
-        XCTAssertEqual(structuredPathString.path[2] as? String, "test")
+        XCTAssertEqual(structuredPathString.path as? [String], ["api", "v1", "test"])
     }
     
     func testStringMatch() throws {
@@ -115,5 +113,30 @@ final class StringSegmentTests: XCTestCase {
         let pathString = "test"
         
         XCTAssertNil(pathString.match("tset"))
+    }
+}
+
+final class RouteContextTests: XCTestCase {
+    func testInitialRouteContext() {
+        let request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        
+        XCTAssertEqual(request.routeContextPath.count, 4)
+        XCTAssertEqual(request.routeContextPath as? [String], ["api", "v1", "cats", "4711"])
+    }
+    
+    func testMatchingSegmentShiftsTheRouteContext() {
+        var request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        
+        XCTAssertNotNil(request.shiftRouteContext(by: "/api/v1"))
+        XCTAssertEqual(request.routeContextPath.count, 2)
+        XCTAssertEqual(request.routeContextPath as? [String], ["cats", "4711"])
+    }
+    
+    func testNonMatchinSegmentDoesNotShiftTheRouteContext() {
+        var request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        
+        XCTAssertNil(request.shiftRouteContext(by: "/api/v2"))
+        XCTAssertEqual(request.routeContextPath.count, 4)
+        XCTAssertEqual(request.routeContextPath as? [String], ["api", "v1", "cats", "4711"])
     }
 }
