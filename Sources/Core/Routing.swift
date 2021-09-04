@@ -113,12 +113,12 @@ public struct Parameter: Segment, Equatable {
 }
 
 public struct SegmentMatch {
-    struct NamedParameterValue {
+    struct ParameterValue {
         let name: String
         let value: String
     }
     
-    let parameterValue: NamedParameterValue?
+    let parameterValue: ParameterValue?
     
     init() { parameterValue = nil }
     
