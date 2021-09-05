@@ -51,15 +51,31 @@ print()
 let router2 = routed("api/v1",
                      routed("cats",
                             routed(route(.Get, "")                                   ~> simpleService(body: "All 🐈"),
-                                   route(.Get, Parameter("cat_id", type: .Int)) ~> simpleService(body: "A 🐈"),
-                                   route(.Post, "")                                  ~> simpleService(body: "Adopt a 🐈")
+                                   route(.Get, Parameter("cat_id", type: .Int)) ~> simpleService(body: "A 🐈")
                             )
-                     )
+                     ),
+                     routed(route(.Post, "cats")                                  ~> simpleService(body: "Adopt a 🐈"))
 )
 
 print("All Cats Expected")
 inspect(
     Server(from: router2).process(request: Request(method: .Get,
+                                                   uri: "/api/v1/cats",
+                                                   body: .empty))
+)
+print()
+
+print("A Cat Expected")
+inspect(
+    Server(from: router2).process(request: Request(method: .Get,
+                                                   uri: "/api/v1/cats/58",
+                                                   body: .empty))
+)
+print()
+
+print("Adopt a Cat Expected")
+inspect(
+    Server(from: router2).process(request: Request(method: .Post,
                                                    uri: "/api/v1/cats",
                                                    body: .empty))
 )

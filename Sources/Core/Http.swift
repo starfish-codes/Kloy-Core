@@ -96,14 +96,10 @@ public struct Request {
         self.getParameter(name).flatMap(T.init)
     }
     
-    var routeContextIndex: Int? = nil
+    var routeContextIndex: Int = 0
     public var routeContextPath: Path {
         get {
-            if let idx = routeContextIndex {
-                return Array(path[idx...])
-            } else {
-                return path
-            }
+            Array(path[routeContextIndex...])
         }
     }
     
@@ -113,7 +109,7 @@ public struct Request {
         
         let rootPath = routeContextPath[..<segmentPath.count]
         if rootPath.elementsEqual(segmentPath, by: { $0.stringValue == $1.stringValue }) {
-            routeContextIndex = rootPath.endIndex
+            routeContextIndex += rootPath.endIndex
             return routeContextPath
         } else {
             return nil
