@@ -82,13 +82,13 @@ public struct Request {
         self.body = body
     }
     
-    var namedParameters: [String:String] = [:]
+    var parameter: [String:String] = [:]
     mutating func setNamedParameter(name: String, value: String) {
-        namedParameters[name] = value
+        parameter[name] = value
     }
     
     public func getParameter(_ name: String) -> String? {
-        namedParameters[name]
+        parameter[name]
     }
     
     public func getParameter<T>(_ name: String, as type: T.Type = T.self) -> T?
