@@ -3,12 +3,9 @@ on: [push, pull_request]
 jobs:
   mac:
     name: macOS
-    runs-on: macos-11
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
-    - uses: fwal/setup-swift@v1
-      with:
-        swift-version: "5.5"
     - name: Get swift version
       run: swift --version
     - name: Build
