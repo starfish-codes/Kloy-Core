@@ -21,17 +21,15 @@ public struct PathMatch {
 ///     - path: The path to match
 ///     - uri: The URI to match
 /// - returns: A `PathMatch` in case of a successful match
-func matchURI(_ path: Path, with uri: String) -> PathMatch? {
-    let uriParts = uri.split(separator: "/")
-    
-    guard uriParts.count == path.count else {
+func matchURI(_ routePath: Path, with uriPath: Path) -> PathMatch? {
+    guard uriPath.count == routePath.count else {
         return nil
     }
     
-    let matchResult = zip(path, uriParts)
-        .compactMap { $0.match(String($1)) }
+    let matchResult = zip(routePath, uriPath)
+        .compactMap { $0.match($1.stringValue) }
     
-    guard matchResult.count == path.count else {
+    guard matchResult.count == routePath.count else {
         return nil
     }
     
@@ -185,7 +183,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
     guard route.method == request.method else { return nil }
     var routedRequest = request
     
-    if let pathMatch = matchURI(route.path, with: request.uri) {
+    if let pathMatch = matchURI(route.path, with: request.routeContextPath) {
         pathMatch.segmentMatches
             .compactMap { $0.parameterValue }
             .forEach { routedRequest.setNamedParameter(name: $0.name, value: $0.value) }
@@ -215,6 +213,49 @@ public func routed(_ routes: RoutedService...) -> Service {
         }
     }
 }
+
+public func routed(_ segment: Segment, _ services: Service...) -> Service {
+    { request in
+        var newRequest = request
+        if newRequest.shiftRouteContext(by: segment) != nil {
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
+            return combined(newRequest)
+        } else {
+            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+        }
+    }
+}
+
+public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
+    { request in
+        let segment = request.path[request.routeContextIndex]
+        let match = parameter.match(segment.stringValue)
+        if (match != nil){
+            var newRequest = request
+            if newRequest.shiftRouteContext(by: segment) != nil {
+                let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
+                return combined(newRequest)
+            } else {
+                return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+            }
+        }
+        else {
+            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+        }
+    }
+}
+
+public func <|>(left: @escaping Service, right: @escaping Service) -> Service {
+    { request in
+        let leftResponse = left(request)
+        if leftResponse.status != .notFound {
+            return leftResponse
+        } else {
+            return right(request)
+        }
+    }
+}
+
 
 /// Combines two `RoutedServices` with a short circuited or logic.
 ///

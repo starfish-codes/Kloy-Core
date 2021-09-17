@@ -1,1 +1,2 @@
-let hello = "World"
+import Core
+
