@@ -7,6 +7,7 @@ func simpleService(status: Status = .ok, body: String) -> (Request) -> Response 
     }
 }
 
+
 func inspect(_ response: Response) {
     print("Reponse: \(response.status.description), Body: \(String(from: response.body))")
 }
@@ -80,47 +81,14 @@ inspect(
                                                    body: .empty))
 )
 
+//MARK -- query params
 
-//MARK -- thinking about cleaning up routed
+//url = "api/v1/cats?colour=black"
 
-public func routed(_ routes: RoutedService...) -> Service {
-    let combined = routes.reduce({ request in nil }, <|>)
-    return { request in
-        if let result = combined(request) {
-            return result
-        } else {
-            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-        }
-    }
-}
-
-public func routed(_ segment: Segment, _ services: Service...) -> Service {
+func simpleServiceWithQueryParams(status: Status = .ok, body: String, query: String) -> (Request) -> Response {
     { request in
-        var newRequest = request
-        if newRequest.shiftRouteContext(by: segment) != nil {
-            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
-            return combined(newRequest)
-        } else {
-            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-        }
+        //Handle query params
+        Response(status: status, headers: [], version: request.version, body: .init(from: body)!)
     }
 }
 
-public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
-    { request in
-        let segment = request.path[request.routeContextIndex]
-        let match = parameter.match(segment.stringValue)
-        if (match != nil){
-            var newRequest = request
-            if newRequest.shiftRouteContext(by: segment) != nil {
-                let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
-                return combined(newRequest)
-            } else {
-                return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-            }
-        }
-        else {
-            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-        }
-    }
-}

@@ -186,7 +186,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
     if let pathMatch = matchURI(route.path, with: request.routeContextPath) {
         pathMatch.segmentMatches
             .compactMap { $0.parameterValue }
-            .forEach { routedRequest.setNamedParameter(name: $0.name, value: $0.value) }
+            .forEach { routedRequest.setParameter(name: $0.name, value: $0.value) }
         return routedRequest
     } else {
         return nil
