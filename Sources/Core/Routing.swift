@@ -231,13 +231,9 @@ public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
         let segment = request.path[request.routeContextIndex]
         let match = parameter.match(segment.stringValue)
         if (match != nil){
-            var newRequest = request
-            if newRequest.shiftRouteContext(by: segment) != nil {
-                let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
-                return combined(newRequest)
-            } else {
-                return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-            }
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>);
+            let service = routed(segment, combined );
+            return service(request)
         }
         else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
