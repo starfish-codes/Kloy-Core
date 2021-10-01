@@ -259,7 +259,6 @@ let parserColorFail = zip(urlParser, queryUUID("color")).map({ _, id in
 let colorFail = parserColorFail.parse(testUrl)
 
 //This will succeed
-print("👺")
 let parserColor = zip(urlParser, queryString("color")).map({ _, color in
     return color
 })
