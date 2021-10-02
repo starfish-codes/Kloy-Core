@@ -150,4 +150,20 @@ final class RouterTests: XCTestCase {
         XCTAssertEqual(notFound.status, .notFound)
     }
 
+    func testParameterRouterEdgeCase() throws {
+        let service = routed("api/v2/cats",
+                             routed(
+                                route(.Get, "") ~> simpleService(body: "All V2 Cats")
+                             ),
+                             routed(Parameter("cat_id", type: .Int),routed(
+                                route(.Get, "") ~> simpleService(body: "A V2 Cat"),
+                                route(.Put, "") ~> simpleService(body: "Feed a V2 cat")
+                             ))
+        )
+        
+        let request = Request(method: .Put, uri: "/api/v2/cats", body: .empty)
+        
+        let response = try XCTUnwrap(service(request))
+        XCTAssertEqual(response.status, .notFound)
+    }
 }
