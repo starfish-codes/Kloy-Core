@@ -161,17 +161,17 @@ struct Parser<A> {
     }
 }
 
-struct QueryParser<A> {
-    let parse: (_ queries: inout Substring, _ queryName:String) ->  A?
-    
-    func parse(_ url:String,_ queryName:String) -> (match: A?, rest:Substring){
-        var url = url[...]
-        let match = self.parse(&url, queryName)
-        return (match, url)
-    }
-            
-                    
-}
+//struct QueryParser<A> {
+//    let parse: (_ queries: inout Substring, _ queryName:String) ->  A?
+//
+//    func parse(_ url:String,_ queryName:String) -> (match: A?, rest:Substring){
+//        var url = url[...]
+//        let match = self.parse(&url, queryName)
+//        return (match, url)
+//    }
+//
+//
+//}
 
 
 
@@ -248,7 +248,6 @@ func queryString(_ queryName: String) -> Parser<String> {
 let parserId = zip(urlParser, queryUUID("id")).map({ _, id in
     return id
 })
-
 let id = parserId.parse(testUrl)
 
 //This will fail because color is not a uuid -> string is preserved
@@ -265,5 +264,27 @@ let parserColor = zip(urlParser, queryString("color")).map({ _, color in
 
 let color = parserColor.parse(testUrl)
 var rest = color.rest
-let uuid = queryUUID("id").parse(&rest)
+let uuid = queryUUID("id")
+uuid.parse( String(rest))
+
+let testUrl2 = "https://cats.starfish.team/api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
+
+let color2 = parserColor.parse(testUrl2)
+var rest2 = color2.rest
+let uuid2 = queryUUID("id").parse(&rest2)
+
+print(rest2)
+
+
+
+
+let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
+let parserId2 = zip(urlParser,queryUUID("id")).map(
+    {_, id in
+        return id
+    })
+let parsedId = parserId2.parse(url)
+let rest3 = String(parsedId.rest)
+let parsedColor = queryString("color").parse(rest3)
+let parsedGender = queryString( "black").parse(String(parsedColor.rest))
 
