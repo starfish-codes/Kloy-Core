@@ -4,44 +4,42 @@ import XCTest
 final class QueryParserTests: XCTestCase {
     func testOneQueryParamUUID(){
         let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f"
-        let parserId = zip(Parsers.urlParser, Parsers.queryUUID(queryName: "id")).map(
+        let parserId = zip(Parsers.urlParser, Parsers.queryUUID("id")).map(
             {_, id in
                 return id
             })
         let id = parserId.parse(url)
-        XCTAssertEqual(id.match!, UUID("58b8d258-5e78-4108-9eee-c3cb6844331f"))
         
+        XCTAssertEqual(id.match!, UUID("58b8d258-5e78-4108-9eee-c3cb6844331f"))
     }
     
     func testTwoQueryParams(){
         let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black"
-        let parserId = zip(Parsers.urlParser, Parsers.queryUUID(queryName: "id")).map(
-            {_, id in
+        let parserId = zip(Parsers.urlParser, Parsers.queryUUID("id"))
+            .map({_, id in
                 return id
             })
         let parsedId = parserId.parse(url)
         let rest = String(parsedId.rest)
-        let parsedColor = Parsers.queryString(queryName: "color").parse(rest)
+        let parsedColor = Parsers.queryString("color").parse(rest)
         
         XCTAssertEqual(parsedId.match!, UUID("58b8d258-5e78-4108-9eee-c3cb6844331f"))
         XCTAssertEqual(parsedColor.match!, "black")
-
     }
+    
     func testThreeQueryParams(){
         let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
-        let parserId = zip(Parsers.urlParser, Parsers.queryUUID(queryName: "id")).map(
-            {_, id in
+        let parserId = zip(Parsers.urlParser, Parsers.queryUUID("id"))
+            .map({_, id in
                 return id
             })
         let parsedId = parserId.parse(url)
         let rest = String(parsedId.rest)
-        let parsedColor = Parsers.queryString(queryName: "color").parse(rest)
-        let parsedGender = Parsers.queryString(queryName: "gender").parse(String(parsedColor.rest))
+        let parsedColor = Parsers.queryString("color").parse(rest)
+        let parsedGender = Parsers.queryString("gender").parse(String(parsedColor.rest))
+        
         XCTAssertEqual(parsedId.match!, UUID("58b8d258-5e78-4108-9eee-c3cb6844331f"))
         XCTAssertEqual(parsedColor.match!, "black")
         XCTAssertEqual(parsedGender.match!, "female")
-
-
     }
-    
 }

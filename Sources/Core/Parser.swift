@@ -1,40 +1,41 @@
 import Foundation
-struct Parser<A> {
+
+public struct Parser<A> {
+    
+    public init(_ parse: @escaping (_ str: inout Substring) ->  A?) {
+        self.parse = parse
+    }
+    
     let parse: (_ str: inout Substring) ->  A?
     
-    func parse(_ str:String) -> (match: A?, rest:Substring){
+    public func parse(_ str: String) -> (match: A?, rest: Substring){
         var str = str[...]
         let match = self.parse(&str)
         return (match, str)
     }
-
-    func map<B>(_ f: @escaping (A)-> B) -> Parser<B> {
+    
+    public func map<B>(_ f: @escaping (A)-> B) -> Parser<B> {
         return Parser<B> { str in
-          self.parse(&str).map(f)
+            self.parse(&str).map(f)
         }
     }
-    
-    
 }
 
-func zip<A, B>(_ a: Parser<A>, _ b: Parser<B>) -> Parser<(A, B)> {
-  return Parser<(A, B)> { str in
-    let original = str
-    guard let matchA = a.parse(&str) else { return nil }
-    guard let matchB = b.parse(&str) else {
-      str = original
-      return nil
+
+public func zip<A, B>(_ a: Parser<A>, _ b: Parser<B>) -> Parser<(A, B)> {
+    return Parser<(A, B)> { str in
+        let original = str
+        guard let matchA = a.parse(&str) else { return nil }
+        guard let matchB = b.parse(&str) else {
+            str = original
+            return nil
+        }
+        return (matchA, matchB)
     }
-    return (matchA, matchB)
-  }
 }
 
 
-
-
-
-
-func literal(_ literal: String ) -> Parser<Void> {
+public func literal(_ literal: String ) -> Parser<Void> {
     return Parser<Void> { str in
         guard str.hasPrefix(literal) else { return nil }
         str.removeFirst(literal.count)
@@ -43,15 +44,12 @@ func literal(_ literal: String ) -> Parser<Void> {
     }
 }
 
-extension Parser where A == String{
-    
-    
-    
-}
+extension Parser where A == String {}
 
-struct Parsers {
-    //This will get the UUID interpretation of the query its value
-    static func queryUUID(queryName: String) -> Parser<UUID> {
+
+public struct Parsers {
+    // This will get the UUID interpretation of the query its value
+    public static func queryUUID(_ queryName: String) -> Parser<UUID> {
         return Parser<UUID>{ str in
             guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
             guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
@@ -63,7 +61,8 @@ struct Parsers {
             return match
         }
     }
-    static let urlParser = Parser<String> { url in
+    
+    public static let urlParser = Parser<String> { url in
         var prefix = url.prefix(while: {$0 != "?"})
         prefix.append(contentsOf: "?") //The ? also belongs to the prefix
         //Maybe some validation if it is indeed a url -> starts with http 👈 not so sure about this
@@ -73,11 +72,11 @@ struct Parsers {
     }
     
     //This will get the String interpretation of the query its value
-    static func queryString(queryName: String) -> Parser<String> {
+    public static func queryString(_ queryName: String) -> Parser<String> {
         return Parser<String>{ str in
             guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
             guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
-
+            
             guard (literal("\(queryName)=").parse(&found) != nil) else {return nil}
             
             //Mutate the str so that found is removed from it
@@ -85,8 +84,8 @@ struct Parsers {
             return String(found)
         }
     }
-
-    private static func convertQueryParamsIntoArray(in str:Substring) -> Array<Substring>? {
+    
+    private static func convertQueryParamsIntoArray(in str: Substring) -> Array<Substring>? {
         let queries = str.split(separator: "&")
         if queries.count == 0 {return nil}
         return queries

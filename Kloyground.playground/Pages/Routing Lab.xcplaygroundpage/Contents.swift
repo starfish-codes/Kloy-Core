@@ -1,6 +1,6 @@
 import Foundation
 import Core
-import Darwin
+// import Darwin
 
 func simpleService(status: Status = .ok, body: String) -> (Request) -> Response {
     { request in
@@ -102,176 +102,36 @@ inspect(
 
 //Content-type can be a classifier as well
 
-
-//First idea --> net so good
-
-//extension Substring {
-//    func slice(from: String, to: String?) -> String? {
-//        return (range(of: from)?.upperBound).flatMap { substringFrom in
-//            switch to{
-//            case .some(let value):
-//                (range(of: value, range: substringFrom..<endIndex)?.lowerBound).map { substringTo in
-//                    String(self[substringFrom..<substringTo])
-//            }
-//            case .none:
-//                String(self[substringFrom...])
-//            }
-//        }
-//    }
-//    func slice(from: String) -> String? {
-//       slice(from: from, to: nil)
-//    }
-//}
-
-//split on ? -> second part exist -> split &
-//let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black"
-
-//let queryParams = url.split(separator: "?")[1]?.split(separator: "&").reduce([:], { $0 })
-//func splitQueryParams(url:String) -> [String : String]{
-//    var dict: [String:String] = [:]
-//    let queryParams = url.split(separator: "?")
-//    guard queryParams.count != 2 else {return dict}
-//
-//    queryParams.split(separator: "&")
-//        .reduce(dict, { agr, next in
-//            let queryParam = next.split(separator: "=")
-//            if queryParams.count == 2 {
-//                agr[String(queryParams[0])] = String(queryParams[1])
-//            }
-//        })
-//
-//}
-//
-//let slice = url[...]
-//    .slice(from: "color=")
-
-struct Parser<A> {
-    let parse: (_ str: inout Substring) ->  A?
-    
-    func parse(_ str:String) -> (match: A?, rest:Substring){
-        var str = str[...]
-        let match = self.parse(&str)
-        return (match, str)
-    }
-
-    func map<B>(_ f: @escaping (A)-> B) -> Parser<B> {
-        return Parser<B> { str in
-          self.parse(&str).map(f)
-        }
-    }
-}
-
-//struct QueryParser<A> {
-//    let parse: (_ queries: inout Substring, _ queryName:String) ->  A?
-//
-//    func parse(_ url:String,_ queryName:String) -> (match: A?, rest:Substring){
-//        var url = url[...]
-//        let match = self.parse(&url, queryName)
-//        return (match, url)
-//    }
-//
-//
-//}
-
-
-
-func zip<A, B>(_ a: Parser<A>, _ b: Parser<B>) -> Parser<(A, B)> {
-  return Parser<(A, B)> { str in
-    let original = str
-    guard let matchA = a.parse(&str) else { return nil }
-    guard let matchB = b.parse(&str) else {
-      str = original
-      return nil
-    }
-    return (matchA, matchB)
-  }
-}
-
-
-func convertQueryParamsIntoArray(in str:Substring) -> Array<Substring>? {
-    let queries = str.split(separator: "&")
-    if queries.count == 0 {return nil}
-    return queries
-}
-
-func literal(_ literal: String ) -> Parser<Void> {
-    return Parser<Void> { str in
-        guard str.hasPrefix(literal) else { return nil }
-        str.removeFirst(literal.count)
-        return ()
-    }
-}
-
-
-//This is a parser that parse the url until the query params, it strips away the url and leaves the query params
-let urlParser = Parser<String> { url in
-    var prefix = url.prefix(while: {$0 != "?"})
-    prefix.append(contentsOf: "?") //The ? also belongs to the prefix
-    //Maybe some validation if it is indeed a url -> starts with http 👈 not so sure about this
-    if !prefix.starts(with: "http") {return nil}
-    url.removeFirst(prefix.count)
-    return String(prefix) //This could be optimised
-}
-
 //We have a url ->
 let testUrl = "https://cats.starfish.team/api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black"
 
-
-//This will get the UUID interpretation of the query its value
-func queryUUID(_ queryName: String) -> Parser<UUID> {
-    return Parser<UUID>{ str in
-        guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
-        guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
-        guard (literal("\(queryName)=").parse(&found) != nil) else {return nil}
-        
-        guard let match =  UUID(String(found)) else {return nil}
-        //Mutate the str so that found is removed from it
-        str = array.filter({!$0.starts(with: "\(queryName)=\(found)")}).reduce("", {$0 + "&" + $1})
-        return match
-    }
-}
-
-//This will get the String interpretation of the query its value
-func queryString(_ queryName: String) -> Parser<String> {
-    return Parser<String>{ str in
-        guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
-        guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
-
-        guard (literal("\(queryName)=").parse(&found) != nil) else {return nil}
-        
-        //Mutate the str so that found is removed from it
-        str = array.filter({!$0.starts(with: "\(queryName)=\(found)")}).reduce("", {$0 + "&" + $1})
-        return String(found)
-    }
-}
-
-let parserId = zip(urlParser, queryUUID("id")).map({ _, id in
+let parserId = zip(Parsers.urlParser, Parsers.queryUUID("id")).map({ _, id in
     return id
 })
 let id = parserId.parse(testUrl)
 
 //This will fail because color is not a uuid -> string is preserved
-let parserColorFail = zip(urlParser, queryUUID("color")).map({ _, id in
+let parserColorFail = zip(Parsers.urlParser, Parsers.queryUUID("color")).map({ _, id in
     return id
 })
 
 let colorFail = parserColorFail.parse(testUrl)
 
 //This will succeed
-let parserColor = zip(urlParser, queryString("color")).map({ _, color in
+let parserColor = zip(Parsers.urlParser, Parsers.queryString("color")).map({ _, color in
     return color
 })
 
 let color = parserColor.parse(testUrl)
 var rest = color.rest
-let uuid = queryUUID("id")
+let uuid = Parsers.queryUUID("id")
 uuid.parse( String(rest))
 
 let testUrl2 = "https://cats.starfish.team/api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
 
 let color2 = parserColor.parse(testUrl2)
 var rest2 = color2.rest
-let uuid2 = queryUUID("id").parse(&rest2)
+let uuid2 = Parsers.queryUUID("id").parse(String(rest2))
 
 print(rest2)
 
@@ -279,12 +139,12 @@ print(rest2)
 
 
 let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
-let parserId2 = zip(urlParser,queryUUID("id")).map(
+let parserId2 = zip(Parsers.urlParser, Parsers.queryUUID("id")).map(
     {_, id in
         return id
     })
 let parsedId = parserId2.parse(url)
 let rest3 = String(parsedId.rest)
-let parsedColor = queryString("color").parse(rest3)
-let parsedGender = queryString( "black").parse(String(parsedColor.rest))
+let parsedColor = Parsers.queryString("color").parse(rest3)
+let parsedGender = Parsers.queryString( "black").parse(String(parsedColor.rest))
 
