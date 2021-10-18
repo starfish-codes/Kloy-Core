@@ -186,7 +186,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
     if let pathMatch = matchURI(route.path, with: request.routeContextPath) {
         pathMatch.segmentMatches
             .compactMap { $0.parameterValue }
-            .forEach { routedRequest.setNamedParameter(name: $0.name, value: $0.value) }
+            .forEach { routedRequest.setParameter(name: $0.name, value: $0.value) }
         return routedRequest
     } else {
         return nil
@@ -228,16 +228,22 @@ public func routed(_ segment: Segment, _ services: Service...) -> Service {
 
 public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
     { request in
+        // in case the value for the parameter is not set in the uri, the route context index does not
+        // work with the path. For example if the parameter is at the end of the path, the routeContextIndex
+        // will point out of the bounds of the path array (See: testParameterRouterEdgeCase()).
+        //
+        // Simple fix as follows. But we need to research where the wrong assumption comes from.
+        // It seams to be the case that if at the position of the parameter there is nothing the problem results.
+        //
+        guard request.path.count > request.routeContextIndex else {
+            return Response(status: .notFound, headers: [], version: request.version, body: .empty)
+        }
         let segment = request.path[request.routeContextIndex]
-        let match = parameter.match(segment.stringValue)
-        if (match != nil){
-            var newRequest = request
-            if newRequest.shiftRouteContext(by: segment) != nil {
-                let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
-                return combined(newRequest)
-            } else {
-                return Response(status: .notFound, headers: [], version: request.version, body: .empty)
-            }
+        
+        if parameter.match(segment.stringValue) != nil {
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>);
+            let service = routed(segment, combined );
+            return service(request)
         }
         else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)

@@ -83,7 +83,7 @@ public struct Request {
     }
     
     var parameters: [String:String] = [:]
-    mutating func setNamedParameter(name: String, value: String) {
+    mutating func setParameter(name: String, value: String) {
         parameters[name] = value
     }
     
