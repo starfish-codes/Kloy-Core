@@ -1,6 +1,5 @@
 import Foundation
 import Core
-// import Darwin
 
 func simpleService(status: Status = .ok, body: String) -> (Request) -> Response {
     { request in
@@ -105,33 +104,33 @@ inspect(
 //We have a url ->
 let testUrl = "https://cats.starfish.team/api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black"
 
-let parserId = zip(Parsers.urlParser, Parsers.queryUUID("id")).map({ _, id in
+let parserId = zip(urlParser, parseQueryUUID("id")).map({ _, id in
     return id
 })
 let id = parserId.parse(testUrl)
 
 //This will fail because color is not a uuid -> string is preserved
-let parserColorFail = zip(Parsers.urlParser, Parsers.queryUUID("color")).map({ _, id in
+let parserColorFail = zip(urlParser, parseQueryUUID("color")).map({ _, id in
     return id
 })
 
 let colorFail = parserColorFail.parse(testUrl)
 
 //This will succeed
-let parserColor = zip(Parsers.urlParser, Parsers.queryString("color")).map({ _, color in
+let parserColor = zip(urlParser, parseQueryString("color")).map({ _, color in
     return color
 })
 
 let color = parserColor.parse(testUrl)
 var rest = color.rest
-let uuid = Parsers.queryUUID("id")
+let uuid = parseQueryUUID("id")
 uuid.parse( String(rest))
 
 let testUrl2 = "https://cats.starfish.team/api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
 
 let color2 = parserColor.parse(testUrl2)
 var rest2 = color2.rest
-let uuid2 = Parsers.queryUUID("id").parse(String(rest2))
+let uuid2 = parseQueryUUID("id").parse(String(rest2))
 
 print(rest2)
 
@@ -139,12 +138,12 @@ print(rest2)
 
 
 let url = "api/v1/cats?id=58b8d258-5e78-4108-9eee-c3cb6844331f&color=black&gender=female"
-let parserId2 = zip(Parsers.urlParser, Parsers.queryUUID("id")).map(
+let parserId2 = zip(urlParser, parseQueryUUID("id")).map(
     {_, id in
         return id
     })
 let parsedId = parserId2.parse(url)
 let rest3 = String(parsedId.rest)
-let parsedColor = Parsers.queryString("color").parse(rest3)
-let parsedGender = Parsers.queryString( "black").parse(String(parsedColor.rest))
+let parsedColor = parseQueryString("color").parse(rest3)
+let parsedGender = parseQueryString( "gender").parse(String(parsedColor.rest))
 

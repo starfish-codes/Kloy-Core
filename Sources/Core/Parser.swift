@@ -44,12 +44,8 @@ public func literal(_ literal: String ) -> Parser<Void> {
     }
 }
 
-extension Parser where A == String {}
-
-
-public struct Parsers {
-    // This will get the UUID interpretation of the query its value
-    public static func queryUUID(_ queryName: String) -> Parser<UUID> {
+// This will get the UUID interpretation of the query its value
+public func parseQueryUUID(_ queryName: String) -> Parser<UUID> {
         return Parser<UUID>{ str in
             guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
             guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
@@ -61,8 +57,7 @@ public struct Parsers {
             return match
         }
     }
-    
-    public static let urlParser = Parser<String> { url in
+public let urlParser = Parser<String> { url in
         var prefix = url.prefix(while: {$0 != "?"})
         prefix.append(contentsOf: "?") //The ? also belongs to the prefix
         //Maybe some validation if it is indeed a url -> starts with http 👈 not so sure about this
@@ -72,7 +67,7 @@ public struct Parsers {
     }
     
     //This will get the String interpretation of the query its value
-    public static func queryString(_ queryName: String) -> Parser<String> {
+public func parseQueryString(_ queryName: String) -> Parser<String> {
         return Parser<String>{ str in
             guard let array = convertQueryParamsIntoArray(in: str) else {return nil}
             guard var found = array.first(where: {$0.starts(with: queryName)}) else {return nil}
@@ -85,9 +80,9 @@ public struct Parsers {
         }
     }
     
-    private static func convertQueryParamsIntoArray(in str: Substring) -> Array<Substring>? {
+private func convertQueryParamsIntoArray(in str: Substring) -> Array<Substring>? {
         let queries = str.split(separator: "&")
         if queries.count == 0 {return nil}
         return queries
     }
-}
+
