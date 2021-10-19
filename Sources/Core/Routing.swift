@@ -25,14 +25,14 @@ func matchURI(_ routePath: Path, with uriPath: Path) -> PathMatch? {
     guard uriPath.count == routePath.count else {
         return nil
     }
-    
+
     let matchResult = zip(routePath, uriPath)
         .compactMap { $0.match($1.stringValue) }
-    
+
     guard matchResult.count == routePath.count else {
         return nil
     }
-    
+
     return PathMatch(segmentMatches: matchResult)
 }
 
@@ -42,15 +42,14 @@ func matchURI(_ routePath: Path, with uriPath: Path) -> PathMatch? {
 /// Each `Path` consists of `Segments`, e.g. the path `/api/v1/test`
 /// consists of the three segments `api`, `v1`, and `test`.
 public protocol Segment {
-    
     /// representation of the segment as a `String`
     var stringValue: String { get }
-    
+
     /// A `Segment` can be read as a `Path` again.
     ///
     /// This allows for nested segments, e.g. `"/v1/api"`.
     var path: Path { get }
-    
+
     /// Tries to match the segment against a string, which was extracted from an URI.
     ///
     /// - parameters:
@@ -60,13 +59,12 @@ public protocol Segment {
 }
 
 extension String: Segment {
-    
     public var stringValue: String { self }
-    
-    public var path: Path { self.split(separator: "/").map { String($0) } }
-    
+
+    public var path: Path { split(separator: "/").map { String($0) } }
+
     public func match(_ string: String) -> SegmentMatch? {
-        self.lowercased() == string.lowercased() ? SegmentMatch() : nil
+        lowercased() == string.lowercased() ? SegmentMatch() : nil
     }
 }
 
@@ -78,7 +76,6 @@ extension String: Segment {
 ///
 /// The segment will only match in case the type constraint is fulfilled.
 public struct Parameter: Segment, Equatable {
-    
     /// Supported types for named parameters in URI.
     /// The `ParameterType.String` will match anything.
     public enum ParameterType: String {
@@ -86,7 +83,7 @@ public struct Parameter: Segment, Equatable {
         case String
         case UUID
     }
-    
+
     let name: String
     let type: ParameterType
 
@@ -94,10 +91,10 @@ public struct Parameter: Segment, Equatable {
         self.name = name
         self.type = type
     }
-    
+
     public var stringValue: String { "{\(name): \(type)}" }
     public var path: Path { [self] }
-    
+
     public func match(_ string: String) -> SegmentMatch? {
         switch type {
         case .Int:
@@ -115,11 +112,11 @@ public struct SegmentMatch {
         let name: String
         let value: String
     }
-    
+
     let parameterValue: ParameterValue?
-    
+
     init() { parameterValue = nil }
-    
+
     init(name: String?, value: String?) {
         if let name = name,
            let value = value {
@@ -129,7 +126,6 @@ public struct SegmentMatch {
         }
     }
 }
-
 
 // MARK: - Route
 
@@ -153,7 +149,6 @@ public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
     Route(path: segments.flatMap { $0.path }, method: method)
 }
 
-
 // MARK: - Router
 
 /// Connect a `Route` and a `Service` to build a `RoutedService`.
@@ -174,6 +169,7 @@ public func ~> (route: Route, service: @escaping Service) -> RoutedService {
         } else { return nil }
     }
 }
+
 infix operator ~>
 
 // Try to match a route with a request. In case the match was successful,
@@ -182,7 +178,7 @@ infix operator ~>
 func matchRequest(_ route: Route, with request: Request) -> Request? {
     guard route.method == request.method else { return nil }
     var routedRequest = request
-    
+
     if let pathMatch = matchURI(route.path, with: request.routeContextPath) {
         pathMatch.segmentMatches
             .compactMap { $0.parameterValue }
@@ -204,7 +200,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
 /// - returns: A service that will consider the RoutedServices in sequence
 ///            and will return HTTP 404 response if no route matches the Request.
 public func routed(_ routes: RoutedService...) -> Service {
-    let combined = routes.reduce({ request in nil }, <|>)
+    let combined = routes.reduce({ _ in nil }, <|>)
     return { request in
         if let result = combined(request) {
             return result
@@ -218,7 +214,7 @@ public func routed(_ segment: Segment, _ services: Service...) -> Service {
     { request in
         var newRequest = request
         if newRequest.shiftRouteContext(by: segment) != nil {
-            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>)
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
             return combined(newRequest)
         } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
@@ -239,19 +235,18 @@ public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
         }
         let segment = request.path[request.routeContextIndex]
-        
+
         if parameter.match(segment.stringValue) != nil {
-            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty)}, <|>);
-            let service = routed(segment, combined );
+            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
+            let service = routed(segment, combined)
             return service(request)
-        }
-        else {
+        } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
         }
     }
 }
 
-public func <|>(left: @escaping Service, right: @escaping Service) -> Service {
+public func <|> (left: @escaping Service, right: @escaping Service) -> Service {
     { request in
         let leftResponse = left(request)
         if leftResponse.status != .notFound {
@@ -261,7 +256,6 @@ public func <|>(left: @escaping Service, right: @escaping Service) -> Service {
         }
     }
 }
-
 
 /// Combines two `RoutedServices` with a short circuited or logic.
 ///
@@ -284,6 +278,7 @@ public func <|> (left: @escaping RoutedService, right: @escaping RoutedService) 
         }
     }
 }
+
 infix operator <|>
 
 // MARK: - Auxillary

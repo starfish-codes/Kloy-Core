@@ -16,7 +16,7 @@ public enum HTTPVersion {
 enum ContentType: String, CaseIterable {
     case Json = "application/json"
     case FromUrlEncoded = "application/x-www-form-urlencoded"
-    case Xml = "application/xml" 
+    case Xml = "application/xml"
     case Pdf = "application/pdf"
     case FormData = "multipart/form-data"
     case Mixed = "multipart/mixed"
@@ -46,18 +46,18 @@ public extension String {
 
 public struct Body {
     public let payload: Data
-    
+
     public init(payload: Data) {
         self.payload = payload
     }
-    
+
     public init?(from input: String, encoding: String.Encoding = .utf8) {
         guard let data = input.data(using: encoding) else {
             return nil
         }
         payload = data
     }
-    
+
     public static let empty = Body(payload: Data())
 }
 
@@ -68,7 +68,7 @@ public struct Request {
     public let path: Path
     public let version: HTTPVersion
     public let body: Body
-    
+
     public init(method: HTTPMethod,
                 headers: [Header] = [],
                 uri: String,
@@ -77,36 +77,34 @@ public struct Request {
         self.method = method
         self.headers = headers
         self.uri = uri
-        self.path = uri.split(separator: "/").map(String.init)
+        path = uri.split(separator: "/").map(String.init)
         self.version = version
         self.body = body
     }
-    
-    var parameters: [String:String] = [:]
+
+    var parameters: [String: String] = [:]
     mutating func setParameter(name: String, value: String) {
         parameters[name] = value
     }
-    
+
     public func getParameter(_ name: String) -> String? {
         parameters[name]
     }
-    
-    public func getParameter<T>(_ name: String, as type: T.Type = T.self) -> T?
-    where T: LosslessStringConvertible {
-        self.getParameter(name).flatMap(T.init)
+
+    public func getParameter<T>(_ name: String, as _: T.Type = T.self) -> T?
+        where T: LosslessStringConvertible {
+        getParameter(name).flatMap(T.init)
     }
-    
+
     var routeContextIndex: Int = 0
     public var routeContextPath: Path {
-        get {
-            Array(path[routeContextIndex...])
-        }
+        Array(path[routeContextIndex...])
     }
-    
+
     public mutating func shiftRouteContext(by segment: Segment) -> Path? {
         let segmentPath = segment.path
         guard segmentPath.count <= routeContextPath.count else { return nil }
-        
+
         let rootPath = routeContextPath[..<segmentPath.count]
         if rootPath.elementsEqual(segmentPath, by: { $0.stringValue == $1.stringValue }) {
             routeContextIndex += rootPath.endIndex
@@ -115,7 +113,6 @@ public struct Request {
             return nil
         }
     }
-    
 }
 
 public struct Response {
@@ -123,7 +120,7 @@ public struct Response {
     public let headers: [Header]
     public let version: HTTPVersion
     public let body: Body
-    
+
     public init(status: Status, headers: [Header], version: HTTPVersion, body: Body) {
         self.status = status
         self.headers = headers
