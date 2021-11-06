@@ -4,7 +4,7 @@ import XCTest
 final class RouterTests: XCTestCase {
     func testCreateRoute() {
         let route = route(.get, "api/v1/cats")
-        let routeSegmentStrings = route.path.map { $0.stringValue }
+        let routeSegmentStrings = route.path.map(\.stringValue)
 
         XCTAssertEqual(route.path.count, 3)
         XCTAssertEqual(routeSegmentStrings, ["api", "v1", "cats"])
