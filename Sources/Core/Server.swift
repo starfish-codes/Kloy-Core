@@ -1,3 +1,4 @@
+@available(macOS 12.0.0, *)
 public struct Server {
     let service: Service
 
@@ -5,7 +6,7 @@ public struct Server {
         service = from
     }
 
-    public func process(request: Request) -> Response {
-        service(request)
+    public func process(request: Request) async -> Response {
+        await service(request)
     }
 }

@@ -1,10 +1,11 @@
 @testable import Core
 import XCTest
 
+@available(macOS 12.0.0, *)
 final class RouterTests: XCTestCase {
     func testCreateRoute() {
         let route = route(.Get, "api/v1/cats")
-        let routeSegmentStrings = route.path.map { $0.stringValue }
+        let routeSegmentStrings = route.path.map(\.stringValue)
 
         XCTAssertEqual(route.path.count, 3)
         XCTAssertEqual(routeSegmentStrings, ["api", "v1", "cats"])
@@ -88,26 +89,27 @@ final class RouterTests: XCTestCase {
         XCTAssertNil(matchRequest(allCatsRoute, with: request))
     }
 
-    func testRoutedServiceWithValidRequest() throws {
+    func testRoutedServiceWithValidRequest() async throws {
         let validRequest = simpleRequest(method: .Get, uri: "api/v1/cats")
         let expectedResponse = simpleReponse(status: .teapot, text: "empty")
 
         let routedService = route(.Get, "api/v1/cats") ~> { _ in expectedResponse }
-
-        let reponse = try XCTUnwrap(routedService(validRequest))
-        XCTAssertEqual(expectedResponse.status, reponse.status)
+        let responseCandidate = await routedService(validRequest)
+        let response = try XCTUnwrap(responseCandidate)
+        XCTAssertEqual(expectedResponse.status, response.status)
     }
 
-    func testRoutedServiceWithInvalidRequest() throws {
+    func testRoutedServiceWithInvalidRequest() async throws {
         let invalidRequest = simpleRequest(method: .Post, uri: "api/v1/cats")
         let expectedResponse = simpleReponse(text: "empty")
 
         let routedService = route(.Get, "api/v1/cats") ~> { _ in expectedResponse }
+        let response = await routedService(invalidRequest)
 
-        XCTAssertNil(routedService(invalidRequest))
+        XCTAssertNil(response)
     }
 
-    func testOrCombinedRoutedService() throws {
+    func testOrCombinedRoutedService() async throws {
         let invalidRequest = simpleRequest(uri: "boom")
 
         let leftRequest = simpleRequest(uri: "left")
@@ -117,17 +119,20 @@ final class RouterTests: XCTestCase {
         let rightResponse = simpleReponse(text: "right")
 
         let routedService = (route(.Get, "left") ~> { _ in leftResponse }) <|> (route(.Get, "right") ~> { _ in rightResponse })
+        let leftCandidate = await routedService(leftRequest)
+        let rightCandidate = await routedService(rightRequest)
 
-        let testLeft = try XCTUnwrap(routedService(leftRequest))
+        let testLeft = try XCTUnwrap(leftCandidate)
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
 
-        let testRight = try XCTUnwrap(routedService(rightRequest))
+        let testRight = try XCTUnwrap(rightCandidate)
         XCTAssertEqual("right", String(data: testRight.body.payload, encoding: .utf8))
 
-        XCTAssertNil(routedService(invalidRequest))
+        let invalid = await routedService(invalidRequest)
+        XCTAssertNil(invalid)
     }
 
-    func testRouter() throws {
+    func testRouter() async throws {
         let invalidRequest = simpleRequest(uri: "boom")
 
         let leftRequest = simpleRequest(uri: "left")
@@ -139,17 +144,22 @@ final class RouterTests: XCTestCase {
         let routedService = routed(route(.Get, "left") ~> { _ in leftResponse },
                                    route(.Get, "right") ~> { _ in rightResponse })
 
-        let testLeft = try XCTUnwrap(routedService(leftRequest))
+        let leftCandidate = await routedService(leftRequest)
+        let rightCandidate = await routedService(rightRequest)
+
+        let testLeft = try XCTUnwrap(leftCandidate)
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
 
-        let testRight = try XCTUnwrap(routedService(rightRequest))
+        let testRight = try XCTUnwrap(rightCandidate)
         XCTAssertEqual("right", String(data: testRight.body.payload, encoding: .utf8))
 
-        let notFound = try XCTUnwrap(routedService(invalidRequest))
+        let invalid = await routedService(invalidRequest)
+
+        let notFound = try XCTUnwrap(invalid)
         XCTAssertEqual(notFound.status, .notFound)
     }
 
-    func testParameterRouterEdgeCase() throws {
+    func testParameterRouterEdgeCase() async throws {
         let service = routed("api/v2/cats",
                              routed(
                                  route(.Get, "") ~> simpleService(body: "All V2 Cats")
@@ -160,8 +170,9 @@ final class RouterTests: XCTestCase {
                              )))
 
         let request = Request(method: .Put, uri: "/api/v2/cats", body: .empty)
+        let responseCandidate = await service(request)
 
-        let response = try XCTUnwrap(service(request))
+        let response = try XCTUnwrap(responseCandidate)
         XCTAssertEqual(response.status, .notFound)
     }
 }
