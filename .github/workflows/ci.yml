@@ -10,5 +10,7 @@ jobs:
       run: swift --version
     - name: Build
       run: swift build
+    - name: Format 🔎
+      run: swift run swiftformat --lint --swiftversion 5.5 .
     - name: 🏃 tests
       run: swift test
