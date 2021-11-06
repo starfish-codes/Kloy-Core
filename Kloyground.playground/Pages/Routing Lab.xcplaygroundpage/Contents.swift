@@ -1,5 +1,9 @@
 import Core
 import Foundation
+import PlaygroundSupport
+import _Concurrency
+
+PlaygroundPage.current.needsIndefiniteExecution = true
 
 func simpleService(status: Status = .ok, body: String) -> (Request) -> Response {
     { request in
@@ -28,20 +32,23 @@ let router = routed(allCatsRouter,
                     adoptCatRouter)
 
 print("All Cats Expected")
-inspect(
-    Server(from: router).process(request: Request(method: .get,
+Task {
+    inspect(await Server(from: router).process(request: Request(method: .get,
                                                   uri: "/api/v1/cats",
                                                   body: .empty))
-)
+    )
+}
 print()
 
 // 1. matching parameters
 print("A Cat Expected")
-inspect(
-    Server(from: router).process(request: Request(method: .get,
-                                                  uri: "/api/v1/cats/58b8d258-5e78-4108-9eee-c3cb6844331f",
-                                                  body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router).process(request: Request(method: .get,
+                                                      uri: "/api/v1/cats/58b8d258-5e78-4108-9eee-c3cb6844331f",
+                                                      body: .empty))
+    )
+}
 print()
 
 // Left to todo:
@@ -55,35 +62,44 @@ let router2 = routed("api/v1",
                      routed(route(.post, "cats") ~> simpleService(body: "Adopt a 🐈")))
 
 print("All Cats Expected")
-inspect(
-    Server(from: router2).process(request: Request(method: .get,
-                                                   uri: "/api/v1/cats",
-                                                   body: .empty))
-)
+
+Task {
+    inspect(
+        await Server(from: router2).process(request: Request(method: .get,
+                                                       uri: "/api/v1/cats",
+                                                       body: .empty))
+    )
+}
 print()
 
 print("A Cat Expected")
-inspect(
-    Server(from: router2).process(request: Request(method: .get,
-                                                   uri: "/api/v1/cats/58",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router2).process(request: Request(method: .get,
+                                                       uri: "/api/v1/cats/58",
+                                                       body: .empty))
+    )
+}
 print()
 
 print("Feed A Cat Expected")
-inspect(
-    Server(from: router2).process(request: Request(method: .put,
-                                                   uri: "/api/v1/cats/58",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router2).process(request: Request(method: .put,
+                                                       uri: "/api/v1/cats/58",
+                                                       body: .empty))
+    )
+}
 print()
 
 print("Adopt a Cat Expected")
-inspect(
-    Server(from: router2).process(request: Request(method: .post,
-                                                   uri: "/api/v1/cats",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router2).process(request: Request(method: .post,
+                                                       uri: "/api/v1/cats",
+                                                       body: .empty))
+    )
+}
 print()
 
 let router3 = routed("api/v2/cats",
@@ -96,27 +112,33 @@ let router3 = routed("api/v2/cats",
                      )))
 
 print("All V2 Cats Expected")
-inspect(
-    Server(from: router3).process(request: Request(method: .get,
-                                                   uri: "/api/v2/cats",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router3).process(request: Request(method: .get,
+                                                       uri: "/api/v2/cats",
+                                                       body: .empty))
+    )
+}
 print()
 
 print("A V2 Cat Expected")
-inspect(
-    Server(from: router3).process(request: Request(method: .get,
-                                                   uri: "/api/v2/cats/58",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router3).process(request: Request(method: .get,
+                                                       uri: "/api/v2/cats/58",
+                                                       body: .empty))
+    )
+}
 print()
 
 print("Feed a V2 Cat Expected")
-inspect(
-    Server(from: router3).process(request: Request(method: .put,
-                                                   uri: "/api/v2/cats/42",
-                                                   body: .empty))
-)
+Task {
+    inspect(
+        await Server(from: router3).process(request: Request(method: .put,
+                                                       uri: "/api/v2/cats/42",
+                                                       body: .empty))
+    )
+}
 print()
 
 // MARK: - - query params
@@ -192,3 +214,5 @@ let parsedId = parserId2.parse(url)
 let rest3 = String(parsedId.rest)
 let parsedColor = parseQueryString("color").parse(rest3)
 let parsedGender = parseQueryString("gender").parse(String(parsedColor.rest))
+
+// PlaygroundPage.current.finishExecution()
