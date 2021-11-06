@@ -14,17 +14,17 @@ public struct Parser<A> {
     }
 
     public func map<B>(_ f: @escaping (A) -> B) -> Parser<B> {
-        return Parser<B> { str in
+        Parser<B> { str in
             self.parse(&str).map(f)
         }
     }
 }
 
-public func zip<A, B>(_ a: Parser<A>, _ b: Parser<B>) -> Parser<(A, B)> {
-    return Parser<(A, B)> { str in
+public func zip<A, B>(_ left: Parser<A>, _ right: Parser<B>) -> Parser<(A, B)> {
+    Parser<(A, B)> { str in
         let original = str
-        guard let matchA = a.parse(&str) else { return nil }
-        guard let matchB = b.parse(&str) else {
+        guard let matchA = left.parse(&str) else { return nil }
+        guard let matchB = right.parse(&str) else {
             str = original
             return nil
         }
@@ -33,7 +33,7 @@ public func zip<A, B>(_ a: Parser<A>, _ b: Parser<B>) -> Parser<(A, B)> {
 }
 
 public func literal(_ literal: String) -> Parser<Void> {
-    return Parser<Void> { str in
+    Parser<Void> { str in
         guard str.hasPrefix(literal) else { return nil }
         str.removeFirst(literal.count)
 
@@ -43,7 +43,7 @@ public func literal(_ literal: String) -> Parser<Void> {
 
 // This will get the UUID interpretation of the query its value
 public func parseQueryUUID(_ queryName: String) -> Parser<UUID> {
-    return Parser<UUID> { str in
+    Parser<UUID> { str in
         guard let array = convertQueryParamsIntoArray(in: str) else { return nil }
         guard var found = array.first(where: { $0.starts(with: queryName) }) else { return nil }
         guard literal("\(queryName)=").parse(&found) != nil else { return nil }
@@ -66,7 +66,7 @@ public let urlParser = Parser<String> { url in
 
 // This will get the String interpretation of the query its value
 public func parseQueryString(_ queryName: String) -> Parser<String> {
-    return Parser<String> { str in
+    Parser<String> { str in
         guard let array = convertQueryParamsIntoArray(in: str) else { return nil }
         guard var found = array.first(where: { $0.starts(with: queryName) }) else { return nil }
 

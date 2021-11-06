@@ -79,9 +79,9 @@ public struct Parameter: Segment, Equatable {
     /// Supported types for named parameters in URI.
     /// The `ParameterType.String` will match anything.
     public enum ParameterType: String {
-        case Int
-        case String
-        case UUID
+        case int
+        case string
+        case uuid
     }
 
     let name: String
@@ -97,11 +97,11 @@ public struct Parameter: Segment, Equatable {
 
     public func match(_ string: String) -> SegmentMatch? {
         switch type {
-        case .Int:
+        case .int:
             return Int(string) != nil ? SegmentMatch(name: name, value: string) : nil
-        case .String:
+        case .string:
             return SegmentMatch(name: name, value: string)
-        case .UUID:
+        case .uuid:
             return UUID(uuidString: string) != nil ? SegmentMatch(name: name, value: string) : nil
         }
     }
@@ -119,7 +119,8 @@ public struct SegmentMatch {
 
     init(name: String?, value: String?) {
         if let name = name,
-           let value = value {
+           let value = value
+        {
             parameterValue = .init(name: name, value: value)
         } else {
             parameterValue = nil
@@ -146,7 +147,7 @@ public struct Route {
 ///     - segments: List of segments to describe the corresponding URI
 /// - returns: The corresponding `Route`.
 public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
-    Route(path: segments.flatMap { $0.path }, method: method)
+    Route(path: segments.flatMap(\.path), method: method)
 }
 
 // MARK: - Router
@@ -181,7 +182,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
 
     if let pathMatch = matchURI(route.path, with: request.routeContextPath) {
         pathMatch.segmentMatches
-            .compactMap { $0.parameterValue }
+            .compactMap(\.parameterValue)
             .forEach { routedRequest.setParameter(name: $0.name, value: $0.value) }
         return routedRequest
     } else {
@@ -214,7 +215,9 @@ public func routed(_ segment: Segment, _ services: Service...) -> Service {
     { request in
         var newRequest = request
         if newRequest.shiftRouteContext(by: segment) != nil {
-            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
+            let combined = services.reduce({ _ in
+                Response(status: .notFound, headers: [], version: request.version, body: .empty)
+            }, <|>)
             return combined(newRequest)
         } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
@@ -237,7 +240,8 @@ public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
         let segment = request.path[request.routeContextIndex]
 
         if parameter.match(segment.stringValue) != nil {
-            let combined = services.reduce({ _ in Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
+            let combined = services.reduce({ _ in
+                Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
             let service = routed(segment, combined)
             return service(request)
         } else {

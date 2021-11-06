@@ -26,20 +26,20 @@ final class SegmentMatchTests: XCTestCase {
 
 final class ParameterizedSegmentTests: XCTestCase {
     func testStringValue() {
-        let segment = Parameter("param", type: .UUID)
+        let segment = Parameter("param", type: .uuid)
 
-        XCTAssertEqual(segment.stringValue, "{param: UUID}")
+        XCTAssertEqual(segment.stringValue, "{param: uuid}")
     }
 
     func testPath() {
-        let namedParameter = Parameter("param", type: .UUID)
+        let namedParameter = Parameter("param", type: .uuid)
 
         XCTAssertEqual(namedParameter.path.count, 1)
         XCTAssertEqual(namedParameter.path[0] as? Parameter, namedParameter)
     }
 
     func testIntMatch() throws {
-        let namedParameter = Parameter("param", type: .Int)
+        let namedParameter = Parameter("param", type: .int)
 
         let match10 = try XCTUnwrap(namedParameter.match("10"))
         XCTAssertEqual(match10.parameterValue?.value, "10")
@@ -55,14 +55,14 @@ final class ParameterizedSegmentTests: XCTestCase {
     }
 
     func testStringMatch() throws {
-        let namedParameter = Parameter("param", type: .String)
+        let namedParameter = Parameter("param", type: .string)
 
         let matchHello = try XCTUnwrap(namedParameter.match("Hello"))
         XCTAssertEqual(matchHello.parameterValue?.value, "Hello")
     }
 
     func testUUIDMatch() throws {
-        let namedParameter = Parameter("param", type: .UUID)
+        let namedParameter = Parameter("param", type: .uuid)
         let validUUID = UUID().uuidString
 
         let matchUUID = try XCTUnwrap(namedParameter.match(validUUID))
@@ -118,14 +118,14 @@ final class StringSegmentTests: XCTestCase {
 
 final class RouteContextTests: XCTestCase {
     func testInitialRouteContext() {
-        let request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        let request = Request(method: .get, uri: "/api/v1/cats/4711", body: .empty)
 
         XCTAssertEqual(request.routeContextPath.count, 4)
         XCTAssertEqual(request.routeContextPath as? [String], ["api", "v1", "cats", "4711"])
     }
 
     func testMatchingSegmentShiftsTheRouteContext() {
-        var request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        var request = Request(method: .get, uri: "/api/v1/cats/4711", body: .empty)
 
         XCTAssertNotNil(request.shiftRouteContext(by: "/api/v1"))
         XCTAssertEqual(request.routeContextPath.count, 2)
@@ -133,7 +133,7 @@ final class RouteContextTests: XCTestCase {
     }
 
     func testNonMatchinSegmentDoesNotShiftTheRouteContext() {
-        var request = Request(method: .Get, uri: "/api/v1/cats/4711", body: .empty)
+        var request = Request(method: .get, uri: "/api/v1/cats/4711", body: .empty)
 
         XCTAssertNil(request.shiftRouteContext(by: "/api/v2"))
         XCTAssertEqual(request.routeContextPath.count, 4)

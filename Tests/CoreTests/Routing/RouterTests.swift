@@ -3,7 +3,7 @@ import XCTest
 
 final class RouterTests: XCTestCase {
     func testCreateRoute() {
-        let route = route(.Get, "api/v1/cats")
+        let route = route(.get, "api/v1/cats")
         let routeSegmentStrings = route.path.map { $0.stringValue }
 
         XCTAssertEqual(route.path.count, 3)
@@ -13,35 +13,35 @@ final class RouterTests: XCTestCase {
     // MARK: - Matching Tests
 
     func testMatch() {
-        let allCatsRoute = route(.Get, "api/v1/cats")
+        let allCatsRoute = route(.get, "api/v1/cats")
         let request = simpleRequest(uri: "/api/v1/cats")
 
         XCTAssertNotNil(matchRequest(allCatsRoute, with: request))
     }
 
     func testCaseInsenstiveMatch() {
-        let allCatsRoute = route(.Get, "API/v1/caTs")
+        let allCatsRoute = route(.get, "API/v1/caTs")
         let request = simpleRequest(uri: "/aPi/V1/CAts")
 
         XCTAssertNotNil(matchRequest(allCatsRoute, with: request))
     }
 
     func testNoMatch() {
-        let aCatsRoute = route(.Get, "api/v1/cats", Parameter("cat_id", type: .Int))
+        let aCatsRoute = route(.get, "api/v1/cats", Parameter("cat_id", type: .int))
         let request = simpleRequest(uri: "/api/v1/cats")
 
         XCTAssertNil(matchRequest(aCatsRoute, with: request))
     }
 
     func testMatchStringParameter() {
-        let aCatsRoute = route(.Get, "api", Parameter("version", type: .String), "cats")
+        let aCatsRoute = route(.get, "api", Parameter("version", type: .string), "cats")
         let request = simpleRequest(uri: "/api/v1/cats")
 
         XCTAssertNotNil(matchRequest(aCatsRoute, with: request))
     }
 
     func testMatchIntParameter() {
-        let aCatsRoute = route(.Get, "api", Parameter("version", type: .Int), "cats")
+        let aCatsRoute = route(.get, "api", Parameter("version", type: .int), "cats")
 
         let wrongRequest = simpleRequest(uri: "/api/v1/cats")
         XCTAssertNil(matchRequest(aCatsRoute, with: wrongRequest))
@@ -51,7 +51,7 @@ final class RouterTests: XCTestCase {
     }
 
     func testMatchUUIDParameter() {
-        let aCatRoute = route(.Get, "api/v1", "cats", Parameter("cat_id", type: .UUID))
+        let aCatRoute = route(.get, "api/v1", "cats", Parameter("cat_id", type: .uuid))
 
         let wrongRequest = simpleRequest(uri: "/api/v1/cats/test")
         XCTAssertNil(matchRequest(aCatRoute, with: wrongRequest))
@@ -62,7 +62,7 @@ final class RouterTests: XCTestCase {
 
     func testNamedParameterPassedDownStream() throws {
         let sampleUUID = UUID()
-        let aCatRoute = route(.Get, "api/v1", "cats", Parameter("cat_id", type: .UUID))
+        let aCatRoute = route(.get, "api/v1", "cats", Parameter("cat_id", type: .uuid))
         let upStreamRequest = simpleRequest(uri: "/api/v1/cats/\(sampleUUID.uuidString)")
 
         let after = matchRequest(aCatRoute, with: upStreamRequest)
@@ -75,34 +75,34 @@ final class RouterTests: XCTestCase {
     }
 
     func testNonMatchDueToMethod() {
-        let allCatsRoute = route(.Get, "api/v1/cats")
-        let request = simpleRequest(method: .Put, uri: "api/v1/cats")
+        let allCatsRoute = route(.get, "api/v1/cats")
+        let request = simpleRequest(method: .put, uri: "api/v1/cats")
 
         XCTAssertNil(matchRequest(allCatsRoute, with: request))
     }
 
     func testNonMatchDueToPath() {
-        let allCatsRoute = route(.Get, "api/v1/cats")
-        let request = simpleRequest(method: .Get, uri: "api/v1/katzen")
+        let allCatsRoute = route(.get, "api/v1/cats")
+        let request = simpleRequest(method: .get, uri: "api/v1/katzen")
 
         XCTAssertNil(matchRequest(allCatsRoute, with: request))
     }
 
     func testRoutedServiceWithValidRequest() throws {
-        let validRequest = simpleRequest(method: .Get, uri: "api/v1/cats")
+        let validRequest = simpleRequest(method: .get, uri: "api/v1/cats")
         let expectedResponse = simpleReponse(status: .teapot, text: "empty")
 
-        let routedService = route(.Get, "api/v1/cats") ~> { _ in expectedResponse }
+        let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
 
         let reponse = try XCTUnwrap(routedService(validRequest))
         XCTAssertEqual(expectedResponse.status, reponse.status)
     }
 
     func testRoutedServiceWithInvalidRequest() throws {
-        let invalidRequest = simpleRequest(method: .Post, uri: "api/v1/cats")
+        let invalidRequest = simpleRequest(method: .post, uri: "api/v1/cats")
         let expectedResponse = simpleReponse(text: "empty")
 
-        let routedService = route(.Get, "api/v1/cats") ~> { _ in expectedResponse }
+        let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
 
         XCTAssertNil(routedService(invalidRequest))
     }
@@ -116,7 +116,7 @@ final class RouterTests: XCTestCase {
         let rightRequest = simpleRequest(uri: "right")
         let rightResponse = simpleReponse(text: "right")
 
-        let routedService = (route(.Get, "left") ~> { _ in leftResponse }) <|> (route(.Get, "right") ~> { _ in rightResponse })
+        let routedService = (route(.get, "left") ~> { _ in leftResponse }) <|> (route(.get, "right") ~> { _ in rightResponse })
 
         let testLeft = try XCTUnwrap(routedService(leftRequest))
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
@@ -136,8 +136,8 @@ final class RouterTests: XCTestCase {
         let rightRequest = simpleRequest(uri: "right")
         let rightResponse = simpleReponse(text: "right")
 
-        let routedService = routed(route(.Get, "left") ~> { _ in leftResponse },
-                                   route(.Get, "right") ~> { _ in rightResponse })
+        let routedService = routed(route(.get, "left") ~> { _ in leftResponse },
+                                   route(.get, "right") ~> { _ in rightResponse })
 
         let testLeft = try XCTUnwrap(routedService(leftRequest))
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
@@ -152,14 +152,14 @@ final class RouterTests: XCTestCase {
     func testParameterRouterEdgeCase() throws {
         let service = routed("api/v2/cats",
                              routed(
-                                 route(.Get, "") ~> simpleService(body: "All V2 Cats")
+                                 route(.get, "") ~> simpleService(body: "All V2 Cats")
                              ),
-                             routed(Parameter("cat_id", type: .Int), routed(
-                                 route(.Get, "") ~> simpleService(body: "A V2 Cat"),
-                                 route(.Put, "") ~> simpleService(body: "Feed a V2 cat")
+                             routed(Parameter("cat_id", type: .int), routed(
+                                 route(.get, "") ~> simpleService(body: "A V2 Cat"),
+                                 route(.put, "") ~> simpleService(body: "Feed a V2 cat")
                              )))
 
-        let request = Request(method: .Put, uri: "/api/v2/cats", body: .empty)
+        let request = Request(method: .put, uri: "/api/v2/cats", body: .empty)
 
         let response = try XCTUnwrap(service(request))
         XCTAssertEqual(response.status, .notFound)

@@ -6,27 +6,27 @@ public struct Header {
 }
 
 public enum HTTPMethod: String {
-    case Get, Post, Put, Delete, Options, Trace, Patch, Purge, Head
+    case get, post, put, delete, options, trace, patch, purge, head
 }
 
 public enum HTTPVersion {
-    case OneOne, Two
+    case oneOne, two
 }
 
 enum ContentType: String, CaseIterable {
-    case Json = "application/json"
-    case FromUrlEncoded = "application/x-www-form-urlencoded"
-    case Xml = "application/xml"
-    case Pdf = "application/pdf"
-    case FormData = "multipart/form-data"
-    case Mixed = "multipart/mixed"
-    case OctedStream = "application/octet-stream"
-    case Csv = "text/csv"
-    case EventStream = "text/event-stream"
-    case Plain = "text/plain"
-    case Html = "text/html"
-    case TextXml = "text/xml" // ???
-    case Yaml = "text/yaml"
+    case json = "application/json"
+    case fromUrlEncoded = "application/x-www-form-urlencoded"
+    case xml = "application/xml"
+    case pdf = "application/pdf"
+    case formData = "multipart/form-data"
+    case mixed = "multipart/mixed"
+    case octedStream = "application/octet-stream"
+    case csv = "text/csv"
+    case eventStream = "text/event-stream"
+    case plain = "text/plain"
+    case html = "text/html"
+    case textXml = "text/xml" // ???
+    case yaml = "text/yaml"
 }
 
 public struct Status: Equatable {
@@ -72,8 +72,9 @@ public struct Request {
     public init(method: HTTPMethod,
                 headers: [Header] = [],
                 uri: String,
-                version: HTTPVersion = .OneOne,
-                body: Body) {
+                version: HTTPVersion = .oneOne,
+                body: Body)
+    {
         self.method = method
         self.headers = headers
         self.uri = uri
@@ -92,7 +93,8 @@ public struct Request {
     }
 
     public func getParameter<T>(_ name: String, as _: T.Type = T.self) -> T?
-        where T: LosslessStringConvertible {
+        where T: LosslessStringConvertible
+    {
         getParameter(name).flatMap(T.init)
     }
 

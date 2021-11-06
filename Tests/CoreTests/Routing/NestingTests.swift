@@ -3,8 +3,8 @@ import XCTest
 
 final class NestingTests: XCTestCase {
     func testOneLevelNesting() {
-        let router = routed("/api/v1", routed(route(.Get, "cats") ~> simpleService(body: "all cats")))
-        let request = simpleRequest(method: .Get, uri: "/api/v1/cats")
+        let router = routed("/api/v1", routed(route(.get, "cats") ~> simpleService(body: "all cats")))
+        let request = simpleRequest(method: .get, uri: "/api/v1/cats")
 
         let response = router(request)
         XCTAssertEqual(response.status, .ok)
@@ -12,8 +12,8 @@ final class NestingTests: XCTestCase {
     }
 
     func testTwoLevelNesting() {
-        let router = routed("api", routed("v1", routed(route(.Get, "cats") ~> simpleService(body: "all cats"))))
-        let request = simpleRequest(method: .Get, uri: "/api/v1/cats")
+        let router = routed("api", routed("v1", routed(route(.get, "cats") ~> simpleService(body: "all cats"))))
+        let request = simpleRequest(method: .get, uri: "/api/v1/cats")
 
         let response = router(request)
         XCTAssertEqual(response.status, .ok)
@@ -23,10 +23,10 @@ final class NestingTests: XCTestCase {
     func testNestedOrRouting() {
         let router = routed("api",
                             routed("v1",
-                                   routed(route(.Get, "cats") ~> simpleService(body: "all cats")),
-                                   routed(route(.Post, "cats") ~> simpleService(body: "adopt cat"))))
-        let allCatsRequest = simpleRequest(method: .Get, uri: "/api/v1/cats")
-        let adoptACatRequest = simpleRequest(method: .Post, uri: "/api/v1/cats")
+                                   routed(route(.get, "cats") ~> simpleService(body: "all cats")),
+                                   routed(route(.post, "cats") ~> simpleService(body: "adopt cat"))))
+        let allCatsRequest = simpleRequest(method: .get, uri: "/api/v1/cats")
+        let adoptACatRequest = simpleRequest(method: .post, uri: "/api/v1/cats")
 
         let adoptACatResponse = router(adoptACatRequest)
         XCTAssertEqual(adoptACatResponse.status, .ok)
@@ -40,7 +40,7 @@ final class NestingTests: XCTestCase {
     func testNestedRoutesWithParameters() {
         let router = routed("api",
                             routed("v1",
-                                   routed(route(.Get, "cats", Parameter("cat_id", type: .UUID)) ~> simpleService(body: "a cat with ID"))))
+                                   routed(route(.get, "cats", Parameter("cat_id", type: .uuid)) ~> simpleService(body: "a cat with ID"))))
 
         let wrongRequest = simpleRequest(uri: "/api/v1/cats/test")
         let failedResponse = router(wrongRequest)
@@ -53,8 +53,8 @@ final class NestingTests: XCTestCase {
 
     func testNestedRoutesWithNestedParameters() {
         let router = routed("api",
-                            routed(Parameter("version", type: .UUID),
-                                   routed(route(.Get, "cats", Parameter("cat_id", type: .UUID)) ~> simpleService(body: "a cat with ID"))))
+                            routed(Parameter("version", type: .uuid),
+                                   routed(route(.get, "cats", Parameter("cat_id", type: .uuid)) ~> simpleService(body: "a cat with ID"))))
 
         let wrongRequest = simpleRequest(uri: "/api/v1/cats/test")
         let failedResponse = router(wrongRequest)

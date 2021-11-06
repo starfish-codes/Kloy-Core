@@ -14,9 +14,9 @@ func inspect(_ response: Response) {
 // MARK: - Routes Implementation
 
 // Route Samples
-let allCats = route(.Get, "api/v1", "cats")
-let aCat = route(.Get, "api", "v1", "cats", Parameter("cat_id", type: .UUID))
-let adoptCat = route(.Get, "/api/v1/cats")
+let allCats = route(.get, "api/v1", "cats")
+let aCat = route(.get, "api", "v1", "cats", Parameter("cat_id", type: .uuid))
+let adoptCat = route(.get, "/api/v1/cats")
 
 // Router Samples
 let allCatsRouter = allCats ~> simpleService(body: "All 🐈")
@@ -29,7 +29,7 @@ let router = routed(allCatsRouter,
 
 print("All Cats Expected")
 inspect(
-    Server(from: router).process(request: Request(method: .Get,
+    Server(from: router).process(request: Request(method: .get,
                                                   uri: "/api/v1/cats",
                                                   body: .empty))
 )
@@ -38,7 +38,7 @@ print()
 // 1. matching parameters
 print("A Cat Expected")
 inspect(
-    Server(from: router).process(request: Request(method: .Get,
+    Server(from: router).process(request: Request(method: .get,
                                                   uri: "/api/v1/cats/58b8d258-5e78-4108-9eee-c3cb6844331f",
                                                   body: .empty))
 )
@@ -49,14 +49,14 @@ print()
 // 2. nested routes
 let router2 = routed("api/v1",
                      routed("cats",
-                            routed(route(.Get, "") ~> simpleService(body: "All 🐈"),
-                                   route(.Get, Parameter("cat_id", type: .Int)) ~> simpleService(body: "A 🐈"),
-                                   route(.Put, Parameter("cat_id", type: .Int)) ~> simpleService(body: "🍼 a 🐈"))),
-                     routed(route(.Post, "cats") ~> simpleService(body: "Adopt a 🐈")))
+                            routed(route(.get, "") ~> simpleService(body: "All 🐈"),
+                                   route(.get, Parameter("cat_id", type: .int)) ~> simpleService(body: "A 🐈"),
+                                   route(.put, Parameter("cat_id", type: .int)) ~> simpleService(body: "🍼 a 🐈"))),
+                     routed(route(.post, "cats") ~> simpleService(body: "Adopt a 🐈")))
 
 print("All Cats Expected")
 inspect(
-    Server(from: router2).process(request: Request(method: .Get,
+    Server(from: router2).process(request: Request(method: .get,
                                                    uri: "/api/v1/cats",
                                                    body: .empty))
 )
@@ -64,7 +64,7 @@ print()
 
 print("A Cat Expected")
 inspect(
-    Server(from: router2).process(request: Request(method: .Get,
+    Server(from: router2).process(request: Request(method: .get,
                                                    uri: "/api/v1/cats/58",
                                                    body: .empty))
 )
@@ -72,7 +72,7 @@ print()
 
 print("Feed A Cat Expected")
 inspect(
-    Server(from: router2).process(request: Request(method: .Put,
+    Server(from: router2).process(request: Request(method: .put,
                                                    uri: "/api/v1/cats/58",
                                                    body: .empty))
 )
@@ -80,7 +80,7 @@ print()
 
 print("Adopt a Cat Expected")
 inspect(
-    Server(from: router2).process(request: Request(method: .Post,
+    Server(from: router2).process(request: Request(method: .post,
                                                    uri: "/api/v1/cats",
                                                    body: .empty))
 )
@@ -88,16 +88,16 @@ print()
 
 let router3 = routed("api/v2/cats",
                      routed(
-                         route(.Get, "") ~> simpleService(body: "All V2 Cats")
+                         route(.get, "") ~> simpleService(body: "All V2 Cats")
                      ),
-                     routed(Parameter("cat_id", type: .Int), routed(
-                         route(.Get, "") ~> simpleService(body: "A V2 Cat"),
-                         route(.Put, "") ~> simpleService(body: "Feed a V2 cat")
+                     routed(Parameter("cat_id", type: .int), routed(
+                         route(.get, "") ~> simpleService(body: "A V2 Cat"),
+                         route(.put, "") ~> simpleService(body: "Feed a V2 cat")
                      )))
 
 print("All V2 Cats Expected")
 inspect(
-    Server(from: router3).process(request: Request(method: .Get,
+    Server(from: router3).process(request: Request(method: .get,
                                                    uri: "/api/v2/cats",
                                                    body: .empty))
 )
@@ -105,7 +105,7 @@ print()
 
 print("A V2 Cat Expected")
 inspect(
-    Server(from: router3).process(request: Request(method: .Get,
+    Server(from: router3).process(request: Request(method: .get,
                                                    uri: "/api/v2/cats/58",
                                                    body: .empty))
 )
@@ -113,7 +113,7 @@ print()
 
 print("Feed a V2 Cat Expected")
 inspect(
-    Server(from: router3).process(request: Request(method: .Put,
+    Server(from: router3).process(request: Request(method: .put,
                                                    uri: "/api/v2/cats/42",
                                                    body: .empty))
 )
