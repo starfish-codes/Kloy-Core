@@ -135,5 +135,5 @@ struct Accept {
     let contentType: [ContentType]
 }
 
-public typealias Service = (Request) -> Response
+public typealias Service = (Request) async -> Response
 public typealias Filter = (Service) -> Service

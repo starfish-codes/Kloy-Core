@@ -2,7 +2,7 @@ import Foundation
 
 /// Definition of a service that considers routing, i.e. the service
 /// will return an `Response?` (Optional) instead of the standard signature.
-public typealias RoutedService = (Request) -> Response?
+public typealias RoutedService = (Request) async -> Response?
 
 // MARK: - Path
 
@@ -166,7 +166,7 @@ public func route(_ method: HTTPMethod, _ segments: Segment...) -> Route {
 public func ~> (route: Route, service: @escaping Service) -> RoutedService {
     { request in
         if let routedRequest = matchRequest(route, with: request) {
-            return service(routedRequest)
+            return await service(routedRequest)
         } else { return nil }
     }
 }
@@ -203,7 +203,7 @@ func matchRequest(_ route: Route, with request: Request) -> Request? {
 public func routed(_ routes: RoutedService...) -> Service {
     let combined = routes.reduce({ _ in nil }, <|>)
     return { request in
-        if let result = combined(request) {
+        if let result = await combined(request) {
             return result
         } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
@@ -218,7 +218,7 @@ public func routed(_ segment: Segment, _ services: Service...) -> Service {
             let combined = services.reduce({ _ in
                 Response(status: .notFound, headers: [], version: request.version, body: .empty)
             }, <|>)
-            return combined(newRequest)
+            return await combined(newRequest)
         } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
         }
@@ -243,7 +243,7 @@ public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
             let combined = services.reduce({ _ in
                 Response(status: .notFound, headers: [], version: request.version, body: .empty) }, <|>)
             let service = routed(segment, combined)
-            return service(request)
+            return await service(request)
         } else {
             return Response(status: .notFound, headers: [], version: request.version, body: .empty)
         }
@@ -252,11 +252,11 @@ public func routed(_ parameter: Parameter, _ services: Service...) -> Service {
 
 public func <|> (left: @escaping Service, right: @escaping Service) -> Service {
     { request in
-        let leftResponse = left(request)
+        let leftResponse = await left(request)
         if leftResponse.status != .notFound {
             return leftResponse
         } else {
-            return right(request)
+            return await right(request)
         }
     }
 }
@@ -275,10 +275,10 @@ public func <|> (left: @escaping Service, right: @escaping Service) -> Service {
 /// The left service is matched first, in case the match is not successful the right route is matched.
 public func <|> (left: @escaping RoutedService, right: @escaping RoutedService) -> RoutedService {
     { request in
-        if let lhs = left(request) {
+        if let lhs = await left(request) {
             return lhs
         } else {
-            return right(request)
+            return await right(request)
         }
     }
 }
