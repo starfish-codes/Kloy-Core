@@ -4,7 +4,7 @@ func simpleRequest(method: HTTPMethod = .get, uri: String) -> Request {
     Request(method: method, headers: [], uri: uri, version: .oneOne, body: .empty)
 }
 
-func simpleReponse(status: Status = .ok, text: String) -> Response {
+func simpleResponse(status: Status = .ok, text: String) -> Response {
     Response(status: status, headers: [], version: .oneOne, body: .init(from: text)!)
 }
 

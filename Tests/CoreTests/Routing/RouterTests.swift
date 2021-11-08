@@ -91,7 +91,7 @@ final class RouterTests: XCTestCase {
 
     func testRoutedServiceWithValidRequest() async throws {
         let validRequest = simpleRequest(method: .get, uri: "api/v1/cats")
-        let expectedResponse = simpleReponse(status: .teapot, text: "empty")
+        let expectedResponse = simpleResponse(status: .teapot, text: "empty")
 
         let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
         let responseCandidate = await routedService(validRequest)
@@ -101,7 +101,7 @@ final class RouterTests: XCTestCase {
 
     func testRoutedServiceWithInvalidRequest() async throws {
         let invalidRequest = simpleRequest(method: .post, uri: "api/v1/cats")
-        let expectedResponse = simpleReponse(text: "empty")
+        let expectedResponse = simpleResponse(text: "empty")
 
         let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
         let response = await routedService(invalidRequest)
@@ -113,10 +113,10 @@ final class RouterTests: XCTestCase {
         let invalidRequest = simpleRequest(uri: "boom")
 
         let leftRequest = simpleRequest(uri: "left")
-        let leftResponse = simpleReponse(text: "left")
+        let leftResponse = simpleResponse(text: "left")
 
         let rightRequest = simpleRequest(uri: "right")
-        let rightResponse = simpleReponse(text: "right")
+        let rightResponse = simpleResponse(text: "right")
 
         let routedService = (route(.get, "left") ~> { _ in leftResponse }) <|> (route(.get, "right") ~> { _ in rightResponse })
         let leftCandidate = await routedService(leftRequest)
@@ -136,10 +136,10 @@ final class RouterTests: XCTestCase {
         let invalidRequest = simpleRequest(uri: "boom")
 
         let leftRequest = simpleRequest(uri: "left")
-        let leftResponse = simpleReponse(text: "left")
+        let leftResponse = simpleResponse(text: "left")
 
         let rightRequest = simpleRequest(uri: "right")
-        let rightResponse = simpleReponse(text: "right")
+        let rightResponse = simpleResponse(text: "right")
 
         let routedService = routed(route(.get, "left") ~> { _ in leftResponse },
                                    route(.get, "right") ~> { _ in rightResponse })
