@@ -15,7 +15,7 @@ public struct PathMatch {
     public init(segmentMatches: [SegmentMatch]) {
         self.segmentMatches = segmentMatches
     }
-    
+
     let segmentMatches: [SegmentMatch]
 }
 
