@@ -32,20 +32,3 @@ let package = Package(
         ),
     ]
 )
-
-// The settings for the git hooks for our repo
-#if canImport(PackageConfig)
-    import PackageConfig
-
-    let config = PackageConfiguration([
-        "komondor": [
-            "pre-push": "swift test",
-            "pre-commit": [
-                "swift test",
-                "swift run swiftformat .",
-                "swift run swiftlint autocorrect --path Sources/",
-                "git add .",
-            ],
-        ],
-    ]).write()
-#endif
