@@ -12,6 +12,10 @@ public typealias Path = [Segment]
 
 /// Represents all matches along a path.
 public struct PathMatch {
+    public init(segmentMatches: [SegmentMatch]) {
+        self.segmentMatches = segmentMatches
+    }
+    
     let segmentMatches: [SegmentMatch]
 }
 
