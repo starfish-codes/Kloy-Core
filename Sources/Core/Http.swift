@@ -3,6 +3,11 @@ import Foundation
 public struct Header {
     let name: String
     let value: String
+
+    public init(name: String, value: String) {
+        self.name = name
+        self.value = value
+    }
 }
 
 public enum HTTPMethod: String {
@@ -32,6 +37,11 @@ enum ContentType: String, CaseIterable {
 public struct Status: Equatable {
     public let code: Int
     public let description: String
+
+    public init(code: Int, description: String) {
+        self.code = code
+        self.description = description
+    }
 }
 
 public extension String {
@@ -133,6 +143,10 @@ public struct Response {
 
 struct Accept {
     let contentType: [ContentType]
+
+    public init(contentType: [ContentType]) {
+        self.contentType = contentType
+    }
 }
 
 public typealias Service = (Request) async -> Response
