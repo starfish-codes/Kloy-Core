@@ -119,7 +119,8 @@ public struct SegmentMatch {
 
     init(name: String?, value: String?) {
         if let name = name,
-           let value = value {
+           let value = value
+        {
             parameterValue = .init(name: name, value: value)
         } else {
             parameterValue = nil
