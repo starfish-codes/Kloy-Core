@@ -1,3 +1,3 @@
 # Kloy-Core
 
-A description of this package.
+Starfish's take on a minimalistic and dependency-free web-framework for tomorrow.

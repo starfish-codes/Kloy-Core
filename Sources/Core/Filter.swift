@@ -47,3 +47,6 @@ public func <<< <A,B,C>(f: @escaping (B) -> C, g: @escaping (A) -> B) -> ((A) ->
         f(g(a))
     }
 }
+
+
+

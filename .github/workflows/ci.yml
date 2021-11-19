@@ -1,0 +1,16 @@
+name: Kloy-Core
+on: [push, pull_request]
+jobs:
+  mac:
+    name: macOS
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get swift version
+      run: swift --version
+    - name: Build
+      run: swift build
+    - name: Format 🔎
+      run: swift run swiftformat --lint --swiftversion 5.5 .
+    - name: 🏃 tests
+      run: swift test
