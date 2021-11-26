@@ -83,8 +83,7 @@ public struct Request {
                 headers: [Header] = [],
                 uri: String,
                 version: HTTPVersion = .oneOne,
-                body: Body)
-    {
+                body: Body) {
         self.method = method
         self.headers = headers
         self.uri = uri
@@ -103,8 +102,7 @@ public struct Request {
     }
 
     public func getParameter<T>(_ name: String, as _: T.Type = T.self) -> T?
-        where T: LosslessStringConvertible
-    {
+        where T: LosslessStringConvertible {
         getParameter(name).flatMap(T.init)
     }
 
