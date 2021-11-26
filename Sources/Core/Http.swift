@@ -141,7 +141,6 @@ public struct Response {
     }
 }
 
-
 struct Accept {
     let contentType: [ContentType]
 
