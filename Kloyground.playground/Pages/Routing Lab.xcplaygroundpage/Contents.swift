@@ -225,3 +225,60 @@ let parsedColor = parseQueryString("color").parse(rest3)
 let parsedGender = parseQueryString("gender").parse(String(parsedColor.rest))
 
 // PlaygroundPage.current.finishExecution()
+
+// Filter
+
+func unauthorizedService(req: Request) -> Response {
+    Response(status: .unauthorized, headers: [], version: req.version, body: .empty)
+}
+
+func logFilter(_ service: @escaping Service) -> Service {
+    // do some cool logging stuff
+    print("I loged something")
+    return service
+}
+
+func checkAuth(_ service: @escaping Service) -> Service {
+    { req in
+        let authHeaders = req.headers.filter { header in
+            header.name == "Authorization"
+        }
+
+        guard let _ = authHeaders.first else {
+            return unauthorizedService(req: req)
+        }
+
+        return await service(req)
+    }
+}
+
+// Could also do something like this or even combine the two
+// let authFilter: Filter = checkAuth;
+// using forward -- I like this one better
+// first authFilter an logingFilter are combined into 1 function and the the teaServices is 'piped' into that function
+
+let allDogs = route(.get, "api/v1", "dogs")
+// Router Samples
+let serviceWithfilters = simpleService(body: "All 🐕") |> checkAuth >>> logFilter
+logFilter <<< checkAuth <| simpleService(body: "All 🐕")
+let allDOgsRouter = allDogs ~> serviceWithfilters
+
+let otherRuntime = Server(from: routed(allDOgsRouter))
+Task {
+    inspect(
+        await otherRuntime.process(request: Request(method: .get,
+                                                    headers: [Header(name: "Authorization", value: "bsdada==")],
+                                                    uri: "/api/v1/dogs",
+                                                    body: .empty))
+    )
+}
+
+print("Unauthorized expected")
+Task {
+    inspect(
+        await otherRuntime.process(request: Request(method: .get,
+
+                                                    uri: "/api/v1/dogs",
+                                                    body: .empty))
+    )
+}

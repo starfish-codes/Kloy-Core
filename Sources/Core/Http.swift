@@ -150,4 +150,4 @@ struct Accept {
 }
 
 public typealias Service = (Request) async -> Response
-public typealias Filter = (Service) -> Service
+public typealias Filter = (Service) async -> Service
