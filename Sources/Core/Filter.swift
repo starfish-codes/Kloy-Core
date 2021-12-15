@@ -69,12 +69,14 @@ public func >>> <A, B, C>(f: @escaping (A) -> B, g: @escaping (B) -> C) -> ((A) 
         g(f(a))
     }
 }
+@available(iOS 13.0.0, *)
 
 public func >>> <A, B, C>(f: @escaping (A) async -> B, g: @escaping (B) async -> C) -> ((A) async -> C) {
     { a in
         await g(f(a))
     }
 }
+@available(iOS 13.0.0, *)
 
 public func >>> <A, B, C>(f: @escaping (A) async throws -> B, g: @escaping (B) async throws -> C) -> ((A) async throws -> C) {
     { a in
@@ -95,12 +97,14 @@ public func <<< <A, B, C>(f: @escaping (B) -> C, g: @escaping (A) -> B) -> ((A) 
         f(g(a))
     }
 }
+@available(iOS 13.0.0, *)
 
 public func <<< <A, B, C>(f: @escaping (A) async -> B, g: @escaping (B) async -> C) -> ((A) async -> C) {
     { a in
         await g(f(a))
     }
 }
+@available(iOS 13.0.0, *)
 
 public func <<< <A, B, C>(f: @escaping (A) async throws -> B, g: @escaping (B) async throws -> C) -> ((A) async throws -> C) {
     { a in
