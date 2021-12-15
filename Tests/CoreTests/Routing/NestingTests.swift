@@ -1,8 +1,6 @@
 @testable import Core
 import XCTest
 
-@available(iOS 13.0.0, *)
-@available(macOS 12.0.0, *)
 final class NestingTests: XCTestCase {
     func testOneLevelNesting() async {
         let router = routed("/api/v1", routed(route(.get, "cats") ~> simpleService(body: "all cats")))

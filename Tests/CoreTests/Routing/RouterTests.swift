@@ -1,8 +1,7 @@
 @testable import Core
 import XCTest
 
-@available(iOS 13.0.0, *)
-@available(macOS 12.0.0, *)
+
 final class RouterTests: XCTestCase {
     func testCreateRoute() {
         let route = route(.get, "api/v1/cats")
