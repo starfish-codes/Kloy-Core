@@ -92,8 +92,8 @@ final class RouterTests: XCTestCase {
         let validRequest = simpleRequest(method: .get, uri: "api/v1/cats")
         let expectedResponse = simpleResponse(status: .teapot, text: "empty")
 
-        let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
-        let responseCandidate = await routedService(validRequest)
+        let routedService = try route(.get, "api/v1/cats") ~> { _ in expectedResponse }
+        let responseCandidate = try await routedService(validRequest)
         let response = try XCTUnwrap(responseCandidate)
         XCTAssertEqual(expectedResponse.status, response.status)
     }
@@ -102,8 +102,8 @@ final class RouterTests: XCTestCase {
         let invalidRequest = simpleRequest(method: .post, uri: "api/v1/cats")
         let expectedResponse = simpleResponse(text: "empty")
 
-        let routedService = route(.get, "api/v1/cats") ~> { _ in expectedResponse }
-        let response = await routedService(invalidRequest)
+        let routedService = try route(.get, "api/v1/cats") ~> { _ in expectedResponse }
+        let response = try await routedService(invalidRequest)
 
         XCTAssertNil(response)
     }
@@ -117,9 +117,9 @@ final class RouterTests: XCTestCase {
         let rightRequest = simpleRequest(uri: "right")
         let rightResponse = simpleResponse(text: "right")
 
-        let routedService = (route(.get, "left") ~> { _ in leftResponse }) <|> (route(.get, "right") ~> { _ in rightResponse })
-        let leftCandidate = await routedService(leftRequest)
-        let rightCandidate = await routedService(rightRequest)
+        let routedService = try (route(.get, "left")  ~> { _ in leftResponse })  <|> (route(.get, "right") ~> { _ in rightResponse })
+        let leftCandidate = try await routedService(leftRequest)
+        let rightCandidate = try await routedService(rightRequest)
 
         let testLeft = try XCTUnwrap(leftCandidate)
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
@@ -127,7 +127,7 @@ final class RouterTests: XCTestCase {
         let testRight = try XCTUnwrap(rightCandidate)
         XCTAssertEqual("right", String(data: testRight.body.payload, encoding: .utf8))
 
-        let invalid = await routedService(invalidRequest)
+        let invalid = try await routedService(invalidRequest)
         XCTAssertNil(invalid)
     }
 
@@ -140,11 +140,11 @@ final class RouterTests: XCTestCase {
         let rightRequest = simpleRequest(uri: "right")
         let rightResponse = simpleResponse(text: "right")
 
-        let routedService = routed(route(.get, "left") ~> { _ in leftResponse },
+        let routedService = try routed(route(.get, "left") ~> { _ in leftResponse },
                                    route(.get, "right") ~> { _ in rightResponse })
 
-        let leftCandidate = await routedService(leftRequest)
-        let rightCandidate = await routedService(rightRequest)
+        let leftCandidate = try await routedService(leftRequest)
+        let rightCandidate = try await routedService(rightRequest)
 
         let testLeft = try XCTUnwrap(leftCandidate)
         XCTAssertEqual("left", String(data: testLeft.body.payload, encoding: .utf8))
@@ -152,14 +152,14 @@ final class RouterTests: XCTestCase {
         let testRight = try XCTUnwrap(rightCandidate)
         XCTAssertEqual("right", String(data: testRight.body.payload, encoding: .utf8))
 
-        let invalid = await routedService(invalidRequest)
+        let invalid =  try await routedService(invalidRequest)
 
         let notFound = try XCTUnwrap(invalid)
         XCTAssertEqual(notFound.status, .notFound)
     }
 
     func testParameterRouterEdgeCase() async throws {
-        let service = routed("api/v2/cats",
+        let service = try routed("api/v2/cats",
                              routed(
                                  route(.get, "") ~> simpleService(body: "All V2 Cats")
                              ),
@@ -169,7 +169,7 @@ final class RouterTests: XCTestCase {
                              )))
 
         let request = Request(method: .put, uri: "/api/v2/cats", body: .empty)
-        let responseCandidate = await service(request)
+        let responseCandidate = try await service(request)
 
         let response = try XCTUnwrap(responseCandidate)
         XCTAssertEqual(response.status, .notFound)
