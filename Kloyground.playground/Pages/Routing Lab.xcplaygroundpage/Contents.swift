@@ -7,7 +7,8 @@ PlaygroundPage.current.needsIndefiniteExecution = true
 
 func simpleService(status: Status = .ok, body: String) -> (Request) -> Response {
     { request in
-        Response(status: status, headers: [], version: request.version, body: .init(from: body)!)
+        print("in simple filter")
+        return Response(status: status, headers: [], version: request.version, body: .init(from: body)!)
     }
 }
 
@@ -260,7 +261,7 @@ func checkAuth(_ service: @escaping Service) -> Service {
 let allDogs = route(.get, "api/v1", "dogs")
 // Router Samples
 let serviceWithfilters = simpleService(body: "All 🐕") |> checkAuth >>> logFilter
-logFilter <<< checkAuth <| simpleService(body: "All 🐕")
+//logFilter <<< checkAuth <| simpleService(body: "All 🐕")
 let allDOgsRouter = allDogs ~> serviceWithfilters
 
 let otherRuntime = Server(from: routed(allDOgsRouter))
