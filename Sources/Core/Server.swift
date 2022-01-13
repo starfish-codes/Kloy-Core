@@ -1,4 +1,3 @@
-@available(macOS 12.0.0, *)
 public struct Server {
     let service: Service
 
