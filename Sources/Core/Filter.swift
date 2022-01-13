@@ -1,3 +1,5 @@
+public typealias Filter = (@escaping Service) async -> Service
+
 // Idea for implementing the filters
 
 precedencegroup ForwardApplication {
@@ -107,5 +109,22 @@ public func <<< <A, B, C>(f: @escaping (A) async throws -> B, g: @escaping (B) a
 public func <<< <A, B, C>(f: @escaping (A) throws -> B, g: @escaping (B) throws -> C) -> ((A) throws -> C) {
     { a in
         try g(f(a))
+    }
+}
+
+public let errorFilter: Filter = errorFilter(_:)
+fileprivate func errorFilter(_ inp: @escaping  Service) async -> Service {
+    { req in
+        do {
+            return try await inp(req)
+            
+        }
+        catch let abort as Abort {
+            return .init(status: abort.status , headers: abort.headers, version: req.version, body: .init(from: abort.reason) ?? .empty)
+        }
+        catch let error {
+            return .init(status: .internalServerError, headers: [], version: req.version, body: (.init(from: error.localizedDescription) ?? .empty))
+        }
+        
     }
 }
